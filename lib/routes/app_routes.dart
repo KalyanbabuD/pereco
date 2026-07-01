@@ -3,6 +3,7 @@ abstract class Routes {
   static const LOGIN = '/login';
   static const DASHBOARD = '/dashboard';
   static const LEAD_DETAILS = '/lead-details';
+  static const CUSTOMER_DETAILS = '/customer-details';
   static const EXPENSES = '/expenses';
   static const TODO = '/todo';
   static const INVOICES = '/invoices';

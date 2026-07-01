@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_colors.dart';
+import 'leads_controller.dart';
 
-class LeadsView extends StatelessWidget {
+class LeadsView extends GetView<LeadsController> {
   const LeadsView({super.key});
 
   Future<void> _launchUrl(String url) async {
@@ -18,9 +19,14 @@ class LeadsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6F8),
+      body: RefreshIndicator(
+        onRefresh: controller.fetchLeads,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Row
@@ -38,29 +44,29 @@ class LeadsView extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    icon: Image.asset('assets/images/pdf_icon.png', width: 20, height: 20),
+                    icon: Image.asset('assets/images/pdf_icon.png', width: 28, height: 28),
                     onPressed: () {
                       Get.snackbar('Export', 'PDF export coming soon!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
                     },
                   ),
                   IconButton(
-                    icon: Image.asset('assets/images/excel_icon.png', width: 20, height: 20),
+                    icon: Image.asset('assets/images/excel_icon.png', width: 28, height: 28),
                     onPressed: () {
                       Get.snackbar('Export', 'Excel export coming soon!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
                     },
                   ),
                   Container(
-                    width: 24,
-                    height: 24,
+                    width: 32,
+                    height: 32,
                     margin: const EdgeInsets.only(left: 8), // small gap between excel and plus
                     decoration: BoxDecoration(
                       color: AppColors.cardDarkBlue,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: InkWell(
                       onTap: () {},
                       child: const Center(
-                        child: Icon(Icons.add, color: Colors.white, size: 16),
+                        child: Icon(Icons.add, color: Colors.white, size: 24),
                       ),
                     ),
                   ),
@@ -71,15 +77,21 @@ class LeadsView extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Stats Cards
-          Row(
-            children: [
-              Expanded(child: _buildStatCard('8/10', 'Active', Icons.people, Colors.green)),
-              const SizedBox(width: 12),
-              Expanded(child: _buildStatCard('8', 'Followups', Icons.forum, Colors.orange)),
-              const SizedBox(width: 12),
-              Expanded(child: _buildStatCard('2', 'Tasks', Icons.assignment_turned_in, AppColors.cardDarkBlue)),
-            ],
-          ),
+          Obx(() {
+            final total = controller.leads.length;
+            final started = controller.leads.where((l) => l.statusName?.toLowerCase() == 'started').length;
+            final other = total - started;
+            
+            return Row(
+              children: [
+                Expanded(child: _buildStatCard('$started/$total', 'Started', Icons.people, Colors.green)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildStatCard('$other', 'Other', Icons.forum, Colors.orange)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildStatCard('$total', 'Total', Icons.assignment_turned_in, AppColors.cardDarkBlue)),
+              ],
+            );
+          }),
           const SizedBox(height: 20),
 
           // Search Bar
@@ -91,9 +103,11 @@ class LeadsView extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: TextField(
-                    decoration: InputDecoration(
+                    controller: controller.searchController,
+                    onChanged: (value) => controller.searchLeads(value),
+                    decoration: const InputDecoration(
                       hintText: 'Search...',
                       hintStyle: TextStyle(color: Colors.grey),
                       border: InputBorder.none,
@@ -118,67 +132,97 @@ class LeadsView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Lead List
-          _buildLeadCard(
-            initials: 'AB',
-            name: 'Abdul Shaik',
-            location: 'Hyderabad',
-            org: 'perennialcode',
-            email: 'shaikabdul2447@gmail.com',
-          ),
-          const SizedBox(height: 16),
-          _buildLeadCard(
-            initials: 'JO',
-            name: 'John Doe',
-            location: 'Hyderabad',
-            org: 'ABC Pvt Ltd',
-            email: 'john.doe@example.com',
-            phone: '9876543210',
-          ),
-          const SizedBox(height: 16),
-          _buildLeadCard(
-            initials: 'VE',
-            name: 'Venky Nama',
-            location: 'hyderabad',
-            org: 'N/A',
-            email: 'customercare@perennialcod...',
-            phone: '01234567890',
-            hasFacebook: true,
-          ),
+          // Dynamic Lead List
+          Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (controller.filteredLeads.isEmpty) {
+              return const Center(child: Text('No leads found.', style: TextStyle(color: Colors.grey)));
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.filteredLeads.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final lead = controller.filteredLeads[index];
+                
+                String initials = 'NA';
+                if (lead.name != null && lead.name!.isNotEmpty) {
+                  initials = lead.name!.substring(0, 1).toUpperCase();
+                  if (lead.name!.length > 1) {
+                    initials += lead.name!.substring(1, 2).toUpperCase();
+                  }
+                }
+                
+                bool isFacebook = lead.sourceName?.toLowerCase() == 'facebook';
+                bool isGoogle = lead.sourceName?.toLowerCase() == 'google';
+
+                String displayPhone = lead.phonenumber ?? '';
+                if (displayPhone.contains(',')) {
+                  displayPhone = displayPhone.split(',').first.trim();
+                } else if (displayPhone.contains('/')) {
+                  displayPhone = displayPhone.split('/').first.trim();
+                }
+
+                return _buildLeadCard(
+                  id: lead.id ?? 0,
+                  initials: initials,
+                  name: lead.name ?? 'Unknown',
+                  location: lead.city ?? '',
+                  org: lead.company ?? '',
+                  email: lead.email ?? '',
+                  phone: displayPhone,
+                  hasFacebook: isFacebook,
+                  hasGoogle: isGoogle,
+                  sourceName: lead.sourceName ?? '',
+                );
+              },
+            );
+          }),
           const SizedBox(height: 32),
         ],
       ),
+    ),
+    ),
     );
   }
 
   Widget _buildStatCard(String value, String title, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 8),
-          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
-          const SizedBox(height: 4),
-          Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 6),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
+          const SizedBox(height: 2),
+          Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
         ],
       ),
     );
   }
 
   Widget _buildLeadCard({
+    required int id,
     required String initials,
     required String name,
     required String location,
     required String org,
     required String email,
-    String phone = 'N/A',
-    bool hasFacebook = false,
+    required bool hasFacebook,
+    required bool hasGoogle,
+    String phone = '',
+    String sourceName = '',
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -194,7 +238,7 @@ class LeadsView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
-                radius: 24,
+                radius: 26,
                 backgroundColor: const Color(0xFFE3EBF7),
                 child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
               ),
@@ -207,54 +251,71 @@ class LeadsView extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 14, color: AppColors.cardDarkBlue),
+                        const Icon(Icons.location_on, size: 16, color: AppColors.cardDarkBlue),
                         const SizedBox(width: 4),
-                        Text(location, style: const TextStyle(fontSize: 13, color: AppColors.cardDarkBlue, fontWeight: FontWeight.w500)),
+                        Expanded(child: Text(location.isNotEmpty ? location : 'N/A', style: const TextStyle(fontSize: 14, color: AppColors.cardDarkBlue, fontWeight: FontWeight.w500))),
                       ],
                     ),
                   ],
                 ),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: AppColors.primaryOrange),
+                icon: const Icon(Icons.more_vert, color: AppColors.cardDarkBlue),
                 onSelected: (String result) {
-                  if (result == 'View') {
-                    Get.toNamed('/lead-details');
-                  }
+                  int tabIndex = 0;
+                  if (result == 'View') tabIndex = 0;
+                  if (result == 'Set Follow-Ups') tabIndex = 1;
+                  if (result == 'Proposal') tabIndex = 2;
+                  if (result == 'Notes') tabIndex = 3;
+                  Get.toNamed('/lead-details', arguments: {'initialTabIndex': tabIndex, 'leadId': id});
                 },
                 color: Colors.white,
                 surfaceTintColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 4,
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   const PopupMenuItem<String>(
                     value: 'View',
-                    child: ListTile(
-                      leading: Icon(Icons.remove_red_eye, size: 20),
-                      title: Text('View'),
-                      contentPadding: EdgeInsets.zero,
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility, color: Color(0xFF637381), size: 18),
+                        SizedBox(width: 12),
+                        Text('View', style: TextStyle(color: Color(0xFF637381), fontSize: 14)),
+                      ],
                     ),
                   ),
                   const PopupMenuItem<String>(
-                    value: 'Set Reminder',
-                    child: ListTile(
-                      leading: Icon(Icons.alarm, size: 20),
-                      title: Text('Set Reminder'),
-                      contentPadding: EdgeInsets.zero,
+                    value: 'Set Follow-Ups',
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(Icons.schedule, color: Color(0xFF637381), size: 18),
+                        SizedBox(width: 12),
+                        Text('Set Follow-Ups', style: TextStyle(color: Color(0xFF637381), fontSize: 14)),
+                      ],
                     ),
                   ),
                   const PopupMenuItem<String>(
                     value: 'Proposal',
-                    child: ListTile(
-                      leading: Icon(Icons.description, size: 20),
-                      title: Text('Proposal'),
-                      contentPadding: EdgeInsets.zero,
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_document, color: Color(0xFF637381), size: 18),
+                        SizedBox(width: 12),
+                        Text('Proposal', style: TextStyle(color: Color(0xFF637381), fontSize: 14)),
+                      ],
                     ),
                   ),
                   const PopupMenuItem<String>(
                     value: 'Notes',
-                    child: ListTile(
-                      leading: Icon(Icons.note, size: 20),
-                      title: Text('Notes'),
-                      contentPadding: EdgeInsets.zero,
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(Icons.note_alt_outlined, color: Color(0xFF637381), size: 18),
+                        SizedBox(width: 12),
+                        Text('Notes', style: TextStyle(color: Color(0xFF637381), fontSize: 14)),
+                      ],
                     ),
                   ),
                 ],
@@ -263,74 +324,88 @@ class LeadsView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           // Details Rows
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Column(
             children: [
-              // Left Column
-              Expanded(
-                flex: 6,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              // First Row: Business & Source
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.business, size: 14, color: AppColors.cardDarkBlue),
+                        const Icon(Icons.business, size: 18, color: AppColors.cardDarkBlue),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(org, style: const TextStyle(fontSize: 12, color: AppColors.textDark))),
+                        Expanded(child: Text(org.isNotEmpty ? org : 'N/A', style: const TextStyle(fontSize: 14, color: AppColors.textDark))),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    GestureDetector(
-                      onTap: () => _launchUrl('mailto:$email'),
+                  ),
+                  const SizedBox(width: 16),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (hasFacebook || sourceName.toLowerCase() == 'facebook') 
+                        const Icon(Icons.facebook, size: 18, color: AppColors.cardDarkBlue)
+                      else if (hasGoogle || sourceName.toLowerCase() == 'google')
+                        Transform.scale(
+                          scale: 1.3,
+                          child: Image.asset('assets/images/google_icon.png', width: 18, height: 18, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 18, color: AppColors.cardDarkBlue)),
+                        )
+                      else
+                        const Icon(Icons.share, size: 18, color: AppColors.cardDarkBlue),
+                      const SizedBox(width: 8),
+                      Text(sourceName.isNotEmpty ? sourceName : (hasFacebook ? 'facebook' : 'N/A'), style: const TextStyle(fontSize: 14, color: AppColors.textDark)),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Second Row: Email & Phone
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (email.isNotEmpty && email != 'N/A') _launchUrl('mailto:$email');
+                      },
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Icon(Icons.mail, size: 14, color: AppColors.cardDarkBlue),
+                          const Icon(Icons.mail, size: 18, color: AppColors.cardDarkBlue),
                           const SizedBox(width: 8),
-                          Expanded(child: Text(email, style: const TextStyle(fontSize: 12, color: AppColors.textDark), overflow: TextOverflow.ellipsis)),
+                          Expanded(child: Text(email.isNotEmpty ? email : 'N/A', style: const TextStyle(fontSize: 14, color: AppColors.textDark), maxLines: 1, overflow: TextOverflow.ellipsis)),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              // Right Column
-              Expanded(
-                flex: 4,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(hasFacebook ? Icons.facebook : Icons.share, size: 14, color: AppColors.cardDarkBlue),
-                        const SizedBox(width: 8),
-                        Text(hasFacebook ? 'facebook' : 'N/A', style: const TextStyle(fontSize: 12, color: AppColors.textDark)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
+                  ),
+                  const SizedBox(width: 16),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          if (phone.isNotEmpty && phone != 'N/A') _launchUrl('tel:$phone');
+                        },
+                        child: const Icon(Icons.phone, size: 18, color: AppColors.cardDarkBlue),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(phone.isNotEmpty ? phone : 'N/A', style: const TextStyle(fontSize: 14, color: AppColors.textDark), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      if (phone.isNotEmpty && phone != 'N/A')
                         GestureDetector(
-                          onTap: () {
-                            if (phone != 'N/A') {
-                              _launchUrl('tel:$phone');
-                            }
-                          },
-                          child: const Icon(Icons.phone, size: 14, color: AppColors.cardDarkBlue),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(phone, style: const TextStyle(fontSize: 12, color: AppColors.textDark))),
-                        if (phone != 'N/A')
-                          GestureDetector(
-                            onTap: () => _launchUrl('https://wa.me/$phone'),
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 4.0),
-                              child: Image.asset('assets/images/whatsapp_icon.png', width: 20, height: 20),
-                            ),
+                          onTap: () => _launchUrl('https://wa.me/$phone'),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 6.0),
+                            child: Image.asset('assets/images/whatsapp_icon.png', width: 18, height: 18),
                           ),
-                      ],
-                    ),
-                  ],
-                ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

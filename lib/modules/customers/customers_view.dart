@@ -1,56 +1,410 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_colors.dart';
+import 'customers_controller.dart';
 
-class CustomersView extends StatelessWidget {
+class CustomersView extends GetView<CustomersController> {
   const CustomersView({super.key});
+
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url)) {
+      Get.snackbar('Error', 'Could not launch $urlString', snackPosition: SnackPosition.BOTTOM);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      body: RefreshIndicator(
+        onRefresh: controller.fetchCustomers,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Customers', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 22)),
+                      Text('Manage your customers', style: TextStyle(color: AppColors.cardDarkBlue, fontSize: 14)),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Image.asset('assets/images/pdf_icon.png', width: 28, height: 28),
+                        onPressed: () {
+                          Get.snackbar('Export', 'PDF export coming soon!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                        },
+                      ),
+                      IconButton(
+                        icon: Image.asset('assets/images/excel_icon.png', width: 28, height: 28),
+                        onPressed: () {
+                          Get.snackbar('Export', 'Excel export coming soon!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                        },
+                      ),
+                      Container(
+                        width: 32,
+                        height: 32,
+                        margin: const EdgeInsets.only(left: 8), // small gap between excel and plus
+                        decoration: BoxDecoration(
+                          color: AppColors.cardDarkBlue,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: InkWell(
+                          onTap: () {},
+                          child: const Center(
+                            child: Icon(Icons.add, color: Colors.white, size: 24),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Stats Cards
+              Obx(() {
+                final total = controller.customers.length;
+                final active = controller.customers.where((c) => c.active == 1).length;
+                final inactive = total - active;
+                
+                return Row(
                   children: [
-                    Text('Customers', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 22)),
-                    Text('Manage your Customers', style: TextStyle(color: AppColors.cardDarkBlue, fontSize: 14)),
+                    Expanded(child: _buildStatCard('$active/$total', 'Active', Icons.people, Colors.green)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildStatCard('$inactive', 'Inactive', Icons.person_off, Colors.orange)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildStatCard('$total', 'Total', Icons.groups, AppColors.cardDarkBlue)),
+                  ],
+                );
+              }),
+              const SizedBox(height: 20),
+
+              // Search Bar
+              Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Center(
+                          child: TextField(
+                            controller: controller.searchController,
+                            onChanged: (value) => controller.searchCustomers(value),
+                            decoration: const InputDecoration(
+                              hintText: 'Search...',
+                              hintStyle: TextStyle(color: Colors.grey),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 44,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF39C12),
+                        borderRadius: BorderRadius.horizontal(right: Radius.circular(8)),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(Icons.search, color: Colors.white, size: 20),
+                        onPressed: () {},
+                      ),
+                    ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return Card(
-                    color: Colors.white,
-                    elevation: 0,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: AppColors.primaryOrange.withOpacity(0.2),
-                        child: const Icon(Icons.person, color: AppColors.primaryOrange),
-                      ),
-                      title: Text('Customer Company ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('contact${index + 1}@example.com\n+91 987654321${index}'),
-                      isThreeLine: true,
-                      trailing: const Icon(Icons.more_vert),
-                    ),
-                  );
-                },
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+
+              // Dynamic List
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (controller.filteredCustomers.isEmpty) {
+                  return const Center(child: Text('No customers found.', style: TextStyle(color: Colors.grey)));
+                }
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: controller.filteredCustomers.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final customer = controller.filteredCustomers[index];
+                    
+                    String initials = 'NA';
+                    if (customer.company != null && customer.company!.isNotEmpty) {
+                      initials = customer.company!.substring(0, 1).toUpperCase();
+                      if (customer.company!.length > 1) {
+                        initials += customer.company!.substring(1, 2).toUpperCase();
+                      }
+                    } else if (customer.contactName != null && customer.contactName!.isNotEmpty) {
+                      initials = customer.contactName!.substring(0, 1).toUpperCase();
+                      if (customer.contactName!.length > 1) {
+                        initials += customer.contactName!.substring(1, 2).toUpperCase();
+                      }
+                    }
+
+                    String displayPhone = customer.phonenumber ?? '';
+                    if (displayPhone.contains(',')) {
+                      displayPhone = displayPhone.split(',').first.trim();
+                    } else if (displayPhone.contains('/')) {
+                      displayPhone = displayPhone.split('/').first.trim();
+                    }
+
+                    return _buildCustomerCard(
+                      id: customer.customerId ?? 0,
+                      initials: initials,
+                      org: customer.company ?? '',
+                      location: customer.city ?? '',
+                      contactName: customer.contactName != null ? customer.contactName!.trim() : '',
+                      email: customer.email ?? '',
+                      phone: displayPhone,
+                      isActive: customer.active == 1,
+                    );
+                  },
+                );
+              }),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String value, String title, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 6),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
+          const SizedBox(height: 2),
+          Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerCard({
+    required int id,
+    required String initials,
+    required String org,
+    required String location,
+    required String contactName,
+    required String email,
+    required bool isActive,
+    String phone = '',
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        children: [
+          // Top Row (Avatar, Org, Menu)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 26,
+                backgroundColor: const Color(0xFFE3EBF7),
+                child: Text(initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(org, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.cardDarkBlue)),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 16, color: AppColors.cardDarkBlue),
+                        const SizedBox(width: 4),
+                        Expanded(child: Text(location.isNotEmpty ? location : 'N/A', style: const TextStyle(fontSize: 14, color: AppColors.cardDarkBlue, fontWeight: FontWeight.w500))),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: AppColors.cardDarkBlue),
+                onSelected: (String result) {
+                  int tabIndex = 0;
+                  if (result == 'Profile') tabIndex = 0;
+                  if (result == 'Contacts') tabIndex = 1;
+                  if (result == 'Follow-Ups') tabIndex = 2;
+                  if (result == 'Notes') tabIndex = 3;
+                  Get.toNamed('/customer-details', arguments: {'initialTabIndex': tabIndex, 'customerId': id});
+                },
+                color: Colors.white,
+                surfaceTintColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 4,
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'Profile',
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(Icons.person, color: Color(0xFF637381), size: 18),
+                        SizedBox(width: 12),
+                        Text('Profile', style: TextStyle(color: Color(0xFF637381), fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'Contacts',
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(Icons.contacts, color: Color(0xFF637381), size: 18),
+                        SizedBox(width: 12),
+                        Text('Contacts', style: TextStyle(color: Color(0xFF637381), fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'Follow-Ups',
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(Icons.schedule, color: Color(0xFF637381), size: 18),
+                        SizedBox(width: 12),
+                        Text('Follow-Ups', style: TextStyle(color: Color(0xFF637381), fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'Notes',
+                    height: 42,
+                    child: Row(
+                      children: [
+                        Icon(Icons.note_alt_outlined, color: Color(0xFF637381), size: 18),
+                        SizedBox(width: 12),
+                        Text('Notes', style: TextStyle(color: Color(0xFF637381), fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // First Details Row: Email and Active Status
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    if (email.isNotEmpty && email != 'N/A') _launchUrl('mailto:$email');
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.mail, size: 18, color: AppColors.cardDarkBlue),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(email.isNotEmpty ? email : 'N/A', style: const TextStyle(fontSize: 14, color: AppColors.textDark), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              isActive ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text('Active', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+              ) : Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text('Inactive', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Second Details Row: Contact Name and Phone
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.person, size: 18, color: AppColors.cardDarkBlue),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(contactName.isNotEmpty ? contactName : 'N/A', style: const TextStyle(fontSize: 14, color: AppColors.textDark), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      if (phone.isNotEmpty && phone != 'N/A') _launchUrl('tel:$phone');
+                    },
+                    child: const Icon(Icons.phone, size: 18, color: AppColors.cardDarkBlue),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(phone.isNotEmpty ? phone : 'N/A', style: const TextStyle(fontSize: 14, color: AppColors.textDark), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  if (phone.isNotEmpty && phone != 'N/A')
+                    GestureDetector(
+                      onTap: () => _launchUrl('https://wa.me/$phone'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 6.0),
+                        child: Image.asset('assets/images/whatsapp_icon.png', width: 18, height: 18),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

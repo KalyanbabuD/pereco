@@ -7,6 +7,8 @@ import '../modules/dashboard/dashboard_view.dart';
 import '../modules/dashboard/dashboard_binding.dart';
 import '../modules/lead_details/lead_details_view.dart';
 import '../modules/lead_details/lead_details_binding.dart';
+import '../modules/customer_details/customer_details_view.dart';
+import '../modules/customer_details/customer_details_binding.dart';
 import '../modules/expenses/expenses_view.dart';
 import '../modules/expenses/expenses_binding.dart';
 import '../modules/todo/todo_view.dart';
@@ -44,6 +46,11 @@ class AppPages {
       name: Routes.LEAD_DETAILS,
       page: () => const LeadDetailsView(),
       binding: LeadDetailsBinding(),
+    ),
+    GetPage(
+      name: Routes.CUSTOMER_DETAILS,
+      page: () => const CustomerDetailsView(),
+      binding: CustomerDetailsBinding(),
     ),
     GetPage(
       name: Routes.EXPENSES,

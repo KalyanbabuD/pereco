@@ -36,10 +36,16 @@ class DashboardView extends GetView<DashboardController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/images/logo.png', height: 24, fit: BoxFit.contain),
+            Image.asset(
+              'assets/images/logo.png',
+              height: 24,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(width: 4),
             const Padding(
-              padding: EdgeInsets.only(bottom: 5.0), // Nudges the text up slightly
+              padding: EdgeInsets.only(
+                bottom: 5.0,
+              ), // Nudges the text up slightly
               child: Text(
                 'CRM',
                 style: TextStyle(
@@ -66,15 +72,23 @@ class DashboardView extends GetView<DashboardController> {
                     actions: [
                       TextButton(
                         onPressed: () => Get.back(),
-                        child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ),
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryRed),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryRed,
+                        ),
                         onPressed: () {
                           Get.back(); // Close dialog
-                          Get.offAllNamed(Routes.LOGIN);
+                          controller.logout();
                         },
-                        child: const Text('Logout', style: TextStyle(color: Colors.white)),
+                        child: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
@@ -116,36 +130,59 @@ class DashboardView extends GetView<DashboardController> {
           ),
         );
       }),
-      bottomNavigationBar: Obx(() => ClipPath(
-        clipper: _BottomNavClipper(),
-        child: Container(
-          color: AppColors.cardDarkBlue,
-          padding: const EdgeInsets.only(top: 16, bottom: 4), // Padding to account for the arch
-          child: Theme(
-            data: ThemeData(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-            ),
-            child: BottomNavigationBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white54,
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
-              currentIndex: controller.currentIndex.value,
-              onTap: controller.changeTabIndex,
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-                BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Customers'),
-                BottomNavigationBarItem(icon: Icon(Icons.headset_mic), label: 'Leads'),
-                BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Todo'),
-              ],
+      bottomNavigationBar: Obx(
+        () => ClipPath(
+          clipper: _BottomNavClipper(),
+          child: Container(
+            color: AppColors.cardDarkBlue,
+            padding: const EdgeInsets.only(
+              top: 16,
+              bottom: 4,
+            ), // Padding to account for the arch
+            child: Theme(
+              data: ThemeData(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: BottomNavigationBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.white54,
+                selectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 12,
+                ),
+                currentIndex: controller.currentIndex.value,
+                onTap: controller.changeTabIndex,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_filled),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.people),
+                    label: 'Customers',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.headset_mic),
+                    label: 'Leads',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.calendar_today),
+                    label: 'Todo',
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      )),
+      ),
     );
   }
 
@@ -157,9 +194,15 @@ class DashboardView extends GetView<DashboardController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            const Text(
-              'Hi shiva Yadav! 👋',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark),
+            Obx(
+              () => Text(
+                'Hi ${controller.userName.value.isNotEmpty ? controller.userName.value : "User"}! 👋',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
             ),
             const SizedBox(height: 4),
             const Text(
@@ -169,36 +212,77 @@ class DashboardView extends GetView<DashboardController> {
             const SizedBox(height: 20),
 
             // Stats Cards
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: AppColors.cardDarkBlue,
-                borderRadius: BorderRadius.circular(16.0),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(child: _buildStatCard('37', 'Customers', Icons.people, AppColors.statCustomers)),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildStatCard('24', 'Leads', Icons.headset_mic, AppColors.statLeads)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(child: _buildStatCard('23', 'Followups', Icons.forum, AppColors.statFollowups)),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildStatCard('85', 'Reminders', Icons.notifications, AppColors.statReminders)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final data = controller.dashboardData.value;
+              return Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: AppColors.cardDarkBlue,
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatCard(
+                            '${data?.totalCustomers ?? 0}',
+                            'Customers',
+                            Icons.people,
+                            AppColors.statCustomers,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildStatCard(
+                            '${data?.totalLeads ?? 0}',
+                            'Leads',
+                            Icons.headset_mic,
+                            AppColors.statLeads,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatCard(
+                            '${data?.totalTodos ?? 0}',
+                            'Todos',
+                            Icons.forum,
+                            AppColors.statFollowups,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildStatCard(
+                            '${data?.totalReminders ?? 0}',
+                            'Reminders',
+                            Icons.notifications,
+                            AppColors.statReminders,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }),
             const SizedBox(height: 24),
 
             // Quick Actions
-            const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+            const Text(
+              'Quick Actions',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark,
+              ),
+            ),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -215,8 +299,21 @@ class DashboardView extends GetView<DashboardController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Reports', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                TextButton(onPressed: () {}, child: const Text('View All', style: TextStyle(color: Colors.blue))),
+                const Text(
+                  'Reports',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text(
+                    'View All',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
               ],
             ),
             Row(
@@ -231,29 +328,57 @@ class DashboardView extends GetView<DashboardController> {
             const SizedBox(height: 24),
 
             // Recent Leads
-            _buildListCard(
-              title: 'Recent Leads',
-              headers: ['Organization', 'Name'],
-              rows: [
-                ['perennialcode', 'Abdul Shaik'],
-                ['ABC Pvt Ltd', 'John Doe'],
-                ['N/A', 'Venky Nama'],
-                ['N/A', 'qq'],
-              ],
-            ),
+            Obx(() {
+              final recentLeads =
+                  controller.dashboardData.value?.recentLeads ?? [];
+              final rows = recentLeads.map((lead) {
+                return [
+                  lead.company?.isNotEmpty == true ? lead.company! : 'N/A',
+                  lead.name ?? 'Unknown',
+                ];
+              }).toList();
+
+              return _buildListCard(
+                title: 'Recent Leads',
+                headers: ['Organization', 'Name'],
+                rows: rows.isEmpty
+                    ? [
+                        ['No leads', '-'],
+                      ]
+                    : rows,
+                onViewAll: () => controller.changeTabIndex(2),
+              );
+            }),
             const SizedBox(height: 24),
 
-            // Recent Followups
-            _buildListCard(
-              title: 'Recent Followups',
-              headers: ['Name', 'Type', 'Status'],
-              rows: [
-                ['Customer', 'Whatsapp', 'Pending'],
-                ['Customer', 'Whatsapp', 'Pending'],
-                ['Lead', 'Email', 'Pending'],
-              ],
-              isFollowup: true,
-            ),
+            // Recent Customers
+            Obx(() {
+              final recentCustomers =
+                  controller.dashboardData.value?.recentCustomers ?? [];
+              final rows = recentCustomers.map((customer) {
+                String name = customer.company?.isNotEmpty == true
+                    ? customer.company!
+                    : (customer.contactName ?? 'Unknown');
+
+                // Truncate long names slightly to fit like the web view
+                if (name.length > 15) {
+                  name = '${name.substring(0, 15)}...';
+                }
+
+                return [name, customer.city ?? 'N/A'];
+              }).toList();
+
+              return _buildListCard(
+                title: 'Recent Customers',
+                headers: ['Name', 'City'],
+                rows: rows.isEmpty
+                    ? [
+                        ['No customers', '-'],
+                      ]
+                    : rows,
+                onViewAll: () => controller.changeTabIndex(1),
+              );
+            }),
             const SizedBox(height: 20),
           ],
         ),
@@ -261,7 +386,12 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildStatCard(String value, String title, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String value,
+    String title,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
@@ -272,17 +402,30 @@ class DashboardView extends GetView<DashboardController> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(icon, color: Colors.white, size: 20),
           ),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-              Text(title, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 12, color: Colors.white70),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -303,11 +446,11 @@ class DashboardView extends GetView<DashboardController> {
             Icon(icon, color: AppColors.cardDarkBlue, size: 28),
             const SizedBox(height: 12),
             Text(
-              title, 
+              title,
               style: const TextStyle(
-                fontSize: 11, 
-                color: AppColors.greyText, 
-                fontWeight: FontWeight.w600
+                fontSize: 11,
+                color: AppColors.greyText,
+                fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -318,30 +461,53 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildListCard({required String title, required List<String> headers, required List<List<String>> rows, bool isFollowup = false}) {
+  Widget _buildListCard({
+    required String title,
+    required List<String> headers,
+    required List<List<String>> rows,
+    bool isFollowup = false,
+    VoidCallback? onViewAll,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.cardDarkBlue)),
-                TextButton(
-                  onPressed: () {},
-                  child: const Row(
-                    children: [
-                      Text('View All', style: TextStyle(color: Colors.grey)),
-                      Icon(Icons.arrow_forward, color: Colors.grey, size: 16),
-                    ],
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.cardDarkBlue,
                   ),
-                )
+                ),
+                if (onViewAll != null)
+                  TextButton(
+                    onPressed: onViewAll,
+                    child: const Row(
+                      children: [
+                        Text('View All', style: TextStyle(color: Colors.grey)),
+                        Icon(Icons.arrow_forward, color: Colors.grey, size: 16),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
@@ -352,7 +518,19 @@ class DashboardView extends GetView<DashboardController> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: headers.map((h) => Expanded(child: Text(h, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)))).toList(),
+                  children: headers
+                      .map(
+                        (h) => Expanded(
+                          child: Text(
+                            h,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
                 ),
                 const SizedBox(height: 12),
                 ...rows.map((row) {
@@ -366,8 +544,12 @@ class DashboardView extends GetView<DashboardController> {
                           child: Text(
                             cell,
                             style: TextStyle(
-                              color: isStatus ? Colors.orange : AppColors.greyText,
-                              fontWeight: isStatus ? FontWeight.bold : FontWeight.normal,
+                              color: isStatus
+                                  ? Colors.orange
+                                  : AppColors.greyText,
+                              fontWeight: isStatus
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                             ),
                           ),
                         );
@@ -377,7 +559,7 @@ class DashboardView extends GetView<DashboardController> {
                 }),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
