@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_colors.dart';
+import '../../core/utils/pdf_export_helper.dart';
+import '../../core/utils/excel_export_helper.dart';
 import 'leads_controller.dart';
 
 class LeadsView extends GetView<LeadsController> {
@@ -46,13 +48,59 @@ class LeadsView extends GetView<LeadsController> {
                   IconButton(
                     icon: Image.asset('assets/images/pdf_icon.png', width: 28, height: 28),
                     onPressed: () {
-                      Get.snackbar('Export', 'PDF export coming soon!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                      if (controller.filteredLeads.isEmpty) {
+                        Get.snackbar('Export', 'No data to export', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                        return;
+                      }
+                      
+                      List<List<String>> data = [];
+                      for (int i = 0; i < controller.filteredLeads.length; i++) {
+                        final lead = controller.filteredLeads[i];
+                        data.add([
+                          (i + 1).toString(),
+                          lead.name ?? 'N/A',
+                          lead.email ?? 'N/A',
+                          lead.phonenumber ?? 'N/A',
+                          lead.city ?? 'N/A',
+                          lead.sourceName ?? 'N/A',
+                        ]);
+                      }
+                      
+                      PdfExportHelper.openTablePdfPreview(
+                        title: 'Individual Leads Data',
+                        headers: ['S.No', 'Name', 'Email', 'Phone', 'City', 'Source'],
+                        data: data,
+                        filename: 'leads_data.pdf',
+                      );
                     },
                   ),
                   IconButton(
                     icon: Image.asset('assets/images/excel_icon.png', width: 28, height: 28),
                     onPressed: () {
-                      Get.snackbar('Export', 'Excel export coming soon!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                      if (controller.filteredLeads.isEmpty) {
+                        Get.snackbar('Export', 'No data to export', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                        return;
+                      }
+                      
+                      List<List<String>> data = [];
+                      for (int i = 0; i < controller.filteredLeads.length; i++) {
+                        final lead = controller.filteredLeads[i];
+                        data.add([
+                          (i + 1).toString(),
+                          lead.name ?? 'N/A',
+                          lead.email ?? 'N/A',
+                          lead.phonenumber ?? 'N/A',
+                          lead.city ?? 'N/A',
+                          lead.sourceName ?? 'N/A',
+                        ]);
+                      }
+                      
+                      ExcelExportHelper.shareTableExcel(
+                        sheetName: 'Leads Data',
+                        headers: ['S.No', 'Name', 'Email', 'Phone', 'City', 'Source'],
+                        data: data,
+                        filename: 'IndividualLeadsData.xlsx',
+                      );
                     },
                   ),
                   Container(

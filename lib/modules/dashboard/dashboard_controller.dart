@@ -8,6 +8,12 @@ import '../../data/models/dashboard_response.dart';
 
 import '../leads/leads_controller.dart';
 import '../customers/customers_controller.dart';
+import '../proposal/proposal_controller.dart';
+import '../followups/followups_controller.dart';
+import '../payments/payments_controller.dart';
+import '../products/products_controller.dart';
+import '../expenses/expenses_controller.dart';
+import '../todo/todo_controller.dart';
 
 class DashboardController extends GetxController {
   final currentIndex = 0.obs;
@@ -33,6 +39,24 @@ class DashboardController extends GetxController {
     }
     if (Get.isRegistered<CustomersController>()) {
       Get.find<CustomersController>().clearSearch();
+    }
+    if (Get.isRegistered<ProposalController>()) {
+      Get.find<ProposalController>().clearSearch();
+    }
+    if (Get.isRegistered<FollowupsController>()) {
+      Get.find<FollowupsController>().clearSearch();
+    }
+    if (Get.isRegistered<PaymentsController>()) {
+      Get.find<PaymentsController>().clearSearch();
+    }
+    if (Get.isRegistered<ProductsController>()) {
+      Get.find<ProductsController>().clearSearch();
+    }
+    if (Get.isRegistered<ExpensesController>()) {
+      Get.find<ExpensesController>().clearSearch();
+    }
+    if (Get.isRegistered<TodoController>()) {
+      Get.find<TodoController>().clearSearch();
     }
   }
 

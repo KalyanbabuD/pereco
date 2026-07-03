@@ -16,9 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'Pereco CRM',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        textTheme: GoogleFonts.openSansTextTheme(
-          Theme.of(context).textTheme,
-        ),
+        textTheme: GoogleFonts.openSansTextTheme(Theme.of(context).textTheme),
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFC72424)),
         useMaterial3: true,
       ),

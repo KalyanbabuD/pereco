@@ -14,41 +14,70 @@ class MainDrawer extends GetView<DashboardController> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const SizedBox(height: 50),
-          _buildDrawerItem(Icons.home_outlined, 'Dashboard', isSelected: controller.currentIndex.value == 0, tabIndex: 0),
-          _buildDrawerItem(Icons.person_outline, 'Leads', isSelected: controller.currentIndex.value == 2, tabIndex: 2),
-          _buildDrawerItem(Icons.description_outlined, 'Proposal', route: Routes.PROPOSAL),
+          Container(
+            padding: const EdgeInsets.only(top: 90, bottom: 45, left: 16, right: 16),
+            color: AppColors.cardDarkBlue, // Dark blue background
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 36,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 6),
+                const Padding(
+                  padding: EdgeInsets.only(top: 2.0),
+                  child: Text(
+                    'CRM',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryOrange,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Color(0xFFEEEEEE)),
+          const SizedBox(height: 10),
+          _buildDrawerItem(Icons.home, 'Dashboard', isSelected: controller.currentIndex.value == 0, tabIndex: 0),
+          _buildDrawerItem(Icons.person_add_alt_1, 'Leads', isSelected: controller.currentIndex.value == 2, tabIndex: 2),
+          _buildDrawerItem(Icons.assignment, 'Proposal', isSelected: controller.currentIndex.value == 4, tabIndex: 4),
+          _buildDrawerItem(Icons.person, 'Customers', isSelected: controller.currentIndex.value == 1, tabIndex: 1),
           
           Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
-              leading: Icon(Icons.group_outlined, color: Colors.grey[700]),
-              title: Text('Customers', style: TextStyle(color: Colors.grey[800])),
+              leading: Icon(Icons.credit_card, color: Colors.grey[700]),
+              title: Text('Payments', style: TextStyle(color: Colors.grey[800])),
               iconColor: Colors.grey[700],
               collapsedIconColor: Colors.grey[700],
-              initiallyExpanded: controller.currentIndex.value == 1,
               children: [
-                _buildSubItem('Customers List', tabIndex: 1),
-                _buildSubItem('Invoices', route: Routes.INVOICES),
-                _buildSubItem('Payments', route: Routes.PAYMENTS),
+                _buildSubItem('Collections', route: null),
+                _buildSubItem('Payments', tabIndex: 6),
               ],
             ),
           ),
 
-          _buildDrawerItem(Icons.inventory_2_outlined, 'Products', route: Routes.PRODUCTS),
-          _buildDrawerItem(Icons.money_outlined, 'Expenses', route: Routes.EXPENSES),
-          _buildDrawerItem(Icons.request_quote_outlined, 'Estimates', route: Routes.ESTIMATIONS),
-          _buildDrawerItem(Icons.checklist_rtl_outlined, 'Todo', isSelected: controller.currentIndex.value == 3, tabIndex: 3),
+          _buildDrawerItem(Icons.inventory_2, 'Products', tabIndex: 7),
+          _buildDrawerItem(Icons.payments, 'Expenses', tabIndex: 8),
+          _buildDrawerItem(Icons.list_alt, 'Todo', isSelected: controller.currentIndex.value == 3, tabIndex: 3),
+          _buildDrawerItem(Icons.phone, 'Follow Up', isSelected: controller.currentIndex.value == 5, tabIndex: 5),
           
           Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
-              leading: Icon(Icons.bar_chart_outlined, color: Colors.grey[700]),
+              leading: Icon(Icons.insert_drive_file, color: Colors.grey[700]),
               title: Text('Reports', style: TextStyle(color: Colors.grey[800])),
               iconColor: Colors.grey[700],
               collapsedIconColor: Colors.grey[700],
               children: [
-                _buildSubItem('Report 1', route: Routes.REPORTS),
+                _buildSubItem('Leads', route: Routes.REPORTS),
+                _buildSubItem('Customers', route: Routes.REPORTS),
+                _buildSubItem('Follow-Ups', route: Routes.REPORTS),
               ],
             ),
           ),

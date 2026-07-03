@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_colors.dart';
+import '../../core/utils/pdf_export_helper.dart';
+import '../../core/utils/excel_export_helper.dart';
 import 'customers_controller.dart';
 
 class CustomersView extends GetView<CustomersController> {
@@ -42,13 +44,57 @@ class CustomersView extends GetView<CustomersController> {
                       IconButton(
                         icon: Image.asset('assets/images/pdf_icon.png', width: 28, height: 28),
                         onPressed: () {
-                          Get.snackbar('Export', 'PDF export coming soon!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                          if (controller.filteredCustomers.isEmpty) {
+                            Get.snackbar('Export', 'No data to export', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                            return;
+                          }
+                          
+                          List<List<String>> data = [];
+                          for (final customer in controller.filteredCustomers) {
+                            data.add([
+                              customer.company ?? 'N/A',
+                              customer.phonenumber ?? '',
+                              customer.email ?? '',
+                              'NaN-NaN-NaN', // Created Date missing in model
+                              customer.city ?? '',
+                              customer.website ?? '',
+                            ]);
+                          }
+                          
+                          PdfExportHelper.openTablePdfPreview(
+                            title: 'Customers Data',
+                            headers: ['Company', 'Phone Number', 'email', 'Created Date', 'City', 'Website'],
+                            data: data,
+                            filename: 'customers_data.pdf',
+                          );
                         },
                       ),
                       IconButton(
                         icon: Image.asset('assets/images/excel_icon.png', width: 28, height: 28),
                         onPressed: () {
-                          Get.snackbar('Export', 'Excel export coming soon!', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                          if (controller.filteredCustomers.isEmpty) {
+                            Get.snackbar('Export', 'No data to export', snackPosition: SnackPosition.BOTTOM, backgroundColor: AppColors.cardDarkBlue, colorText: Colors.white);
+                            return;
+                          }
+                          
+                          List<List<String>> data = [];
+                          for (final customer in controller.filteredCustomers) {
+                            data.add([
+                              customer.company ?? 'N/A',
+                              customer.phonenumber ?? '',
+                              customer.email ?? '',
+                              'NaN-NaN-NaN', // Created Date missing in model
+                              customer.city ?? '',
+                              customer.website ?? '',
+                            ]);
+                          }
+                          
+                          ExcelExportHelper.shareTableExcel(
+                            sheetName: 'Customers Data',
+                            headers: ['Company', 'Phone Number', 'email', 'Created Date', 'City', 'Website'],
+                            data: data,
+                            filename: 'CustomersData.xlsx',
+                          );
                         },
                       ),
                       Container(

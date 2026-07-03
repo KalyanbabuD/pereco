@@ -6,6 +6,13 @@ import 'widgets/main_drawer.dart';
 import '../leads/leads_view.dart';
 import '../todo/todo_view.dart';
 import '../customers/customers_view.dart';
+import '../proposal/proposal_view.dart';
+import '../proposal/proposal_controller.dart';
+import '../followups/followups_view.dart';
+import '../followups/followups_controller.dart';
+import '../payments/payments_view.dart';
+import '../products/products_view.dart';
+import '../expenses/expenses_view.dart';
 import '../../routes/app_routes.dart';
 
 class DashboardView extends GetView<DashboardController> {
@@ -119,6 +126,21 @@ class DashboardView extends GetView<DashboardController> {
           case 3:
             content = const TodoView();
             break;
+          case 4:
+            content = const ProposalView();
+            break;
+          case 5:
+            content = const FollowupsView();
+            break;
+          case 6:
+            content = const PaymentsView();
+            break;
+          case 7:
+            content = const ProductsView();
+            break;
+          case 8:
+            content = const ExpensesView();
+            break;
           default:
             content = _buildHomeContent();
         }
@@ -148,7 +170,8 @@ class DashboardView extends GetView<DashboardController> {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 type: BottomNavigationBarType.fixed,
-                selectedItemColor: Colors.white,
+                currentIndex: controller.currentIndex.value < 4 ? controller.currentIndex.value : 0,
+                selectedItemColor: controller.currentIndex.value < 4 ? Colors.white : Colors.white54,
                 unselectedItemColor: Colors.white54,
                 selectedLabelStyle: const TextStyle(
                   fontWeight: FontWeight.bold,
@@ -158,7 +181,6 @@ class DashboardView extends GetView<DashboardController> {
                   fontWeight: FontWeight.normal,
                   fontSize: 12,
                 ),
-                currentIndex: controller.currentIndex.value,
                 onTap: controller.changeTabIndex,
                 items: const [
                   BottomNavigationBarItem(
@@ -187,8 +209,13 @@ class DashboardView extends GetView<DashboardController> {
   }
 
   Widget _buildHomeContent() {
-    return SingleChildScrollView(
-      child: Padding(
+    return RefreshIndicator(
+      onRefresh: () async {
+        await controller.fetchDashboardData();
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,10 +314,20 @@ class DashboardView extends GetView<DashboardController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildActionIcon('Customers', Icons.people),
-                _buildActionIcon('Leads', Icons.headset_mic),
-                _buildActionIcon('Task', Icons.task_alt),
-                _buildActionIcon('Reminder', Icons.notifications_none),
+                _buildActionIcon('Customers', Icons.people, onTap: () => controller.changeTabIndex(1)),
+                _buildActionIcon('Leads', Icons.headset_mic, onTap: () => controller.changeTabIndex(2)),
+                _buildActionIcon('Proposal', Icons.edit_document, onTap: () { 
+                  controller.changeTabIndex(4); 
+                  if (Get.isRegistered<ProposalController>()) {
+                    Get.find<ProposalController>().fetchProposals();
+                  }
+                }),
+                _buildActionIcon('Follow-ups', Icons.event_available, onTap: () {
+                  controller.changeTabIndex(5);
+                  if (Get.isRegistered<FollowupsController>()) {
+                    Get.find<FollowupsController>().fetchFollowups();
+                  }
+                }),
               ],
             ),
             const SizedBox(height: 24),
@@ -319,10 +356,10 @@ class DashboardView extends GetView<DashboardController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildActionIcon('Customers', Icons.people),
-                _buildActionIcon('Leads', Icons.call),
-                _buildActionIcon('Followups', Icons.forum_outlined),
-                _buildActionIcon('Reminders', Icons.notifications_none),
+                _buildActionIcon('Customers', Icons.people, onTap: () => controller.changeTabIndex(1)),
+                _buildActionIcon('Leads', Icons.phone_in_talk, onTap: () => controller.changeTabIndex(2)),
+                _buildActionIcon('Customer Conversion', Icons.how_to_reg, onTap: () => controller.changeTabIndex(2)),
+                _buildActionIcon('Follow-ups', Icons.event_available, onTap: () => controller.changeTabIndex(5)),
               ],
             ),
             const SizedBox(height: 24),
@@ -383,7 +420,8 @@ class DashboardView extends GetView<DashboardController> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildStatCard(
@@ -431,31 +469,36 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildActionIcon(String title, IconData icon) {
+  Widget _buildActionIcon(String title, IconData icon, {VoidCallback? onTap}) {
     return Material(
       color: Colors.white,
       elevation: 10, // Increased elevation for a stronger shadow
       shadowColor: Colors.black.withOpacity(0.3),
       borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 78,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppColors.cardDarkBlue, size: 28),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.greyText,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 78,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: AppColors.cardDarkBlue, size: 28),
+              const SizedBox(height: 12),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 10, // slightly smaller to fit better
+                    color: AppColors.greyText,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
         ),
       ),
     );
