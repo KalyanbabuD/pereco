@@ -14,6 +14,7 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
   // Observables
   final isLoading = false.obs;
   final customerDetails = Rx<Customer?>(null);
+  final contacts = <Contact>[].obs;
   final followUps = <FollowUp>[].obs;
   final notes = <Note>[].obs;
 
@@ -104,8 +105,24 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
         }
       }
 
+      // 4. Fetch Contacts
+      final contactsResponse = await _apiProvider.get('${ApiEndpoints.getContacts}?userid=$customerId');
+      if (contactsResponse.statusCode == 200 && contactsResponse.body != null) {
+        Map<String, dynamic> jsonResponse;
+        if (contactsResponse.body is Map<String, dynamic>) {
+          jsonResponse = contactsResponse.body;
+        } else {
+          jsonResponse = jsonDecode(contactsResponse.bodyString!);
+        }
+
+        if (jsonResponse['Status'] == true && jsonResponse['ResultData'] != null) {
+          final list = jsonResponse['ResultData'] as List;
+          contacts.value = list.map((e) => Contact.fromJson(e)).toList();
+        }
+      }
+
     } catch (e) {
-      print('Error fetching customer details: $e');
+      Get.snackbar('Error', 'Failed to load customer details');
     } finally {
       isLoading.value = false;
     }

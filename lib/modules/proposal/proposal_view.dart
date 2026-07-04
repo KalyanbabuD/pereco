@@ -108,7 +108,12 @@ class ProposalView extends GetView<ProposalController> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: InkWell(
-                          onTap: () {},
+                          onTap: () async {
+                            final result = await Get.toNamed(Routes.ADD_PROPOSAL);
+                            if (result == true) {
+                              controller.fetchProposals();
+                            }
+                          },
                           child: const Center(
                             child: Icon(Icons.add, color: Colors.white, size: 24),
                           ),

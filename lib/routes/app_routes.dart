@@ -14,9 +14,13 @@ abstract class Routes {
   static const PRODUCTS = '/products';
   static const REPORTS = '/reports';
   static const PROPOSAL_DETAILS = '/proposal-details';
+  static const ESTIMATION_DETAILS = '/estimation-details';
+  static const INVOICE_DETAILS = '/invoice-details';
+  static const ADD_EXPENSE = '/add-expense';
   static const FOLLOWUPS = '/followups';
   static const PAYMENT_DETAILS = '/payment-details';
   static const LEAD_REPORTS = '/lead-reports';
   static const CUSTOMER_REPORTS = '/customer-reports';
   static const FOLLOWUP_REPORTS = '/followup-reports';
+  static const ADD_PROPOSAL = '/add-proposal';
 }

@@ -83,7 +83,6 @@ class ExpenseDetailsView extends GetView<ExpenseDetailsController> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildSectionHeader(Icons.receipt_long, 'Expense Details', Colors.orange),
-                    const Icon(Icons.edit_square, color: AppColors.cardDarkBlue, size: 20),
                   ],
                 ),
               ),

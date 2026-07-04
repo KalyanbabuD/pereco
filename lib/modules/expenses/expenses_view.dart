@@ -4,6 +4,8 @@ import '../../core/app_colors.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
 import 'expenses_controller.dart';
+import 'add_expense_controller.dart';
+import 'add_expense_view.dart';
 
 class ExpensesView extends GetView<ExpensesController> {
   const ExpensesView({super.key});
@@ -163,14 +165,32 @@ class ExpensesView extends GetView<ExpensesController> {
             child: IconButton(
               icon: const Icon(Icons.add, color: Colors.white, size: 16),
               padding: EdgeInsets.zero,
-              onPressed: () {},
+              onPressed: () async {
+                final result = await Get.bottomSheet(
+                  GetBuilder<AddExpenseController>(
+                    init: AddExpenseController(),
+                    builder: (_) => const AddExpenseView(),
+                  ),
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                );
+                
+                if (result == true) {
+                  Get.snackbar('Success', 'Expense added successfully', 
+                      snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+                  controller.fetchExpenses();
+                }
+              },
             ),
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await controller.fetchExpenses();
+          await Future.wait([
+            controller.fetchExpenses(),
+            controller.fetchDropdownData(),
+          ]);
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -334,9 +354,24 @@ class ExpensesView extends GetView<ExpensesController> {
                                               size: 20,
                                             ),
                                             color: Colors.white,
-                                            onSelected: (value) {
+                                            onSelected: (value) async {
                                               if (value == 'view') {
                                                 Get.toNamed('/expense-details', arguments: expense);
+                                              } else if (value == 'edit') {
+                                                final result = await Get.bottomSheet(
+                                                  GetBuilder<AddExpenseController>(
+                                                    init: AddExpenseController(expense: expense),
+                                                    builder: (_) => const AddExpenseView(),
+                                                  ),
+                                                  isScrollControlled: true,
+                                                  backgroundColor: Colors.transparent,
+                                                );
+                                                
+                                                if (result == true) {
+                                                  Get.snackbar('Success', 'Expense updated successfully', 
+                                                      snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+                                                  controller.fetchExpenses();
+                                                }
                                               }
                                             },
                                             itemBuilder: (context) => [

@@ -107,3 +107,41 @@ class Customer {
     );
   }
 }
+
+class Contact {
+  final int? id;
+  final int? userid;
+  final String? firstname;
+  final String? lastname;
+  final String? email;
+  final String? phonenumber;
+  final String? title;
+  final int? isPrimary;
+  final int? active;
+
+  Contact({
+    this.id,
+    this.userid,
+    this.firstname,
+    this.lastname,
+    this.email,
+    this.phonenumber,
+    this.title,
+    this.isPrimary,
+    this.active,
+  });
+
+  factory Contact.fromJson(Map<String, dynamic> json) {
+    return Contact(
+      id: json['id'],
+      userid: json['userid'],
+      firstname: json['firstname'],
+      lastname: json['lastname'],
+      email: json['email'],
+      phonenumber: json['phonenumber'],
+      title: json['title'],
+      isPrimary: json['is_primary'],
+      active: json['active'],
+    );
+  }
+}

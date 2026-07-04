@@ -22,6 +22,8 @@ import '../modules/estimations/estimations_binding.dart';
 import '../modules/proposal/proposal_view.dart';
 import '../modules/proposal/proposal_binding.dart';
 import '../modules/proposal/proposal_details_view.dart';
+import '../modules/proposal/add_proposal_view.dart';
+import '../modules/proposal/add_proposal_binding.dart';
 import '../modules/payments/payments_view.dart';
 import '../modules/payments/payments_binding.dart';
 import '../modules/payments/payment_details_view.dart';
@@ -33,6 +35,8 @@ import '../modules/reports/customer_reports_view.dart';
 import '../modules/reports/followup_reports_view.dart';
 import '../modules/followups/followups_view.dart';
 import '../modules/followups/followups_binding.dart';
+import '../modules/expenses/add_expense_view.dart';
+import '../modules/expenses/add_expense_binding.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -133,6 +137,16 @@ class AppPages {
     GetPage(
       name: Routes.FOLLOWUP_REPORTS,
       page: () => const FollowupReportsView(),
+    ),
+    GetPage(
+      name: Routes.ADD_PROPOSAL,
+      page: () => const AddProposalView(),
+      binding: AddProposalBinding(),
+    ),
+    GetPage(
+      name: Routes.ADD_EXPENSE,
+      page: () => const AddExpenseView(),
+      binding: AddExpenseBinding(),
     ),
   ];
 }

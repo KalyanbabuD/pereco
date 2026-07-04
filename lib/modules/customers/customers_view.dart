@@ -5,6 +5,8 @@ import '../../core/app_colors.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
 import 'customers_controller.dart';
+import 'add_customer_view.dart';
+import 'add_customer_controller.dart';
 
 class CustomersView extends GetView<CustomersController> {
   const CustomersView({super.key});
@@ -106,7 +108,22 @@ class CustomersView extends GetView<CustomersController> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: InkWell(
-                          onTap: () {},
+                          onTap: () async {
+                            final result = await Get.bottomSheet(
+                              GetBuilder<AddCustomerController>(
+                                init: AddCustomerController(),
+                                builder: (_) => const AddCustomerView(),
+                              ),
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                            );
+                            
+                            if (result == true) {
+                              Get.snackbar('Success', 'Customer added successfully', 
+                                  snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+                              controller.fetchCustomers();
+                            }
+                          },
                           child: const Center(
                             child: Icon(Icons.add, color: Colors.white, size: 24),
                           ),

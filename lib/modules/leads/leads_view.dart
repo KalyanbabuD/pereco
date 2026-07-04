@@ -5,6 +5,7 @@ import '../../core/app_colors.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
 import 'leads_controller.dart';
+import 'widgets/add_lead_view.dart';
 
 class LeadsView extends GetView<LeadsController> {
   const LeadsView({super.key});
@@ -112,7 +113,13 @@ class LeadsView extends GetView<LeadsController> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        Get.bottomSheet(
+                          const AddLeadView(),
+                          isScrollControlled: true,
+                          ignoreSafeArea: false,
+                        );
+                      },
                       child: const Center(
                         child: Icon(Icons.add, color: Colors.white, size: 24),
                       ),

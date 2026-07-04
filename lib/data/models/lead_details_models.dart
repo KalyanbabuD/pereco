@@ -95,6 +95,7 @@ class FollowUp {
   final String date;
   final String firstName;
   final String lastName;
+  final int? staff;
 
   FollowUp({
     required this.id,
@@ -102,6 +103,7 @@ class FollowUp {
     required this.date,
     required this.firstName,
     required this.lastName,
+    this.staff,
   });
 
   factory FollowUp.fromJson(Map<String, dynamic> json) {
@@ -111,6 +113,7 @@ class FollowUp {
       date: json['date'] ?? '',
       firstName: json['firstname'] ?? '',
       lastName: json['lastname'] ?? '',
+      staff: json['staff'] != null ? int.tryParse(json['staff'].toString()) : null,
     );
   }
 }

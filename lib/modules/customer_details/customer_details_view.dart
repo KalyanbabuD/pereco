@@ -4,6 +4,15 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_colors.dart';
 import 'customer_details_controller.dart';
 import '../../data/models/customer_model.dart';
+import '../../data/models/lead_details_models.dart';
+import 'widgets/add_contact_controller.dart' as add_contact_c;
+import 'widgets/add_contact_view.dart' as add_contact_v;
+import 'widgets/add_followup_controller.dart' as add_followup_c;
+import 'widgets/add_followup_view.dart' as add_followup_v;
+import 'widgets/add_note_controller.dart' as add_note_c;
+import 'widgets/add_note_view.dart' as add_note_v;
+import '../../core/utils/pdf_export_helper.dart';
+import '../../core/utils/excel_export_helper.dart';
 
 class CustomerDetailsView extends GetView<CustomerDetailsController> {
   const CustomerDetailsView({super.key});
@@ -20,19 +29,13 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.cardDarkBlue,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
         ),
-        title: const Text('Customer Details', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 18)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: AppColors.textDark),
-            onPressed: () {},
-          ),
-        ],
+        title: const Text('Customer Details', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Container(
@@ -225,20 +228,18 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
 
   Widget _buildContactsTab() {
     return Obx(() {
-      if (controller.isLoading.value && controller.customerDetails.value == null) {
+      if (controller.isLoading.value && controller.contacts.isEmpty) {
         return const Center(child: CircularProgressIndicator());
       }
       
-      final profile = controller.customerDetails.value;
-
-      bool matchesSearch(Customer? p) {
-        if (p == null) return false;
+      final filteredContacts = controller.contacts.where((c) {
         if (controller.contactsSearch.value.isEmpty) return true;
         final q = controller.contactsSearch.value.toLowerCase();
-        return (p.contactName?.toLowerCase().contains(q) ?? false) ||
-               (p.email?.toLowerCase().contains(q) ?? false) ||
-               (p.contactPhone?.toLowerCase().contains(q) ?? false);
-      }
+        return (c.firstname?.toLowerCase().contains(q) ?? false) ||
+               (c.lastname?.toLowerCase().contains(q) ?? false) ||
+               (c.email?.toLowerCase().contains(q) ?? false) ||
+               (c.phonenumber?.toLowerCase().contains(q) ?? false);
+      }).toList();
 
       return RefreshIndicator(
         onRefresh: controller.fetchCustomerDetails,
@@ -296,22 +297,34 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.add, color: Colors.white, size: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Get.bottomSheet(
+                        GetBuilder<add_contact_c.AddContactController>(
+                          init: add_contact_c.AddContactController()..customerId = controller.customerId,
+                          builder: (_) => const add_contact_v.AddContactView(),
+                        ),
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                      );
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDarkBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.add, color: Colors.white, size: 20),
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: (!matchesSearch(profile)) 
+                child: filteredContacts.isEmpty 
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
@@ -322,7 +335,7 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
                             children: [
                               Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
                               SizedBox(height: 16),
-                              Text('No Data Found', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                              Text('No Contacts Found', style: TextStyle(color: Colors.grey, fontSize: 16)),
                             ],
                           ),
                         )
@@ -334,15 +347,7 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
                         Wrap(
                           spacing: 16,
                           runSpacing: 16,
-                          children: [
-                            if (profile != null && profile.contactName != null && profile.contactName!.isNotEmpty)
-                              _buildContactCard(
-                                profile.contactName!, 
-                                profile.title ?? 'N/A', 
-                                profile.email ?? 'N/A', 
-                                profile.contactPhone ?? 'N/A'
-                              )
-                          ],
+                          children: filteredContacts.map((c) => _buildContactCard(c)).toList(),
                         ),
                       ],
                     ),
@@ -354,7 +359,13 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
     });
   }
 
-  Widget _buildContactCard(String name, String title, String email, String phone) {
+  Widget _buildContactCard(Contact contact) {
+    String name = '${contact.firstname ?? ''} ${contact.lastname ?? ''}'.trim();
+    if (name.isEmpty) name = 'N/A';
+    String title = (contact.title != null && contact.title!.isNotEmpty) ? contact.title! : 'N/A';
+    String email = (contact.email != null && contact.email!.isNotEmpty) ? contact.email! : 'N/A';
+    String phone = (contact.phonenumber != null && contact.phonenumber!.isNotEmpty) ? contact.phonenumber! : 'N/A';
+
     return Container(
       width: Get.width > 700 ? 320 : Get.width - 32,
       padding: const EdgeInsets.all(16),
@@ -384,7 +395,21 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
                   Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.cardDarkBlue)),
                 ],
               ),
-              const Icon(Icons.edit_square, size: 18, color: AppColors.primaryOrange),
+              GestureDetector(
+                onTap: () {
+                  Get.bottomSheet(
+                    GetBuilder<add_contact_c.AddContactController>(
+                      init: add_contact_c.AddContactController()
+                        ..customerId = controller.customerId
+                        ..existingContact = contact,
+                      builder: (_) => const add_contact_v.AddContactView(),
+                    ),
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                  );
+                },
+                child: const Icon(Icons.edit_square, size: 18, color: AppColors.primaryOrange),
+              ),
             ],
           ),
           Padding(
@@ -476,15 +501,27 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryOrange,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.add, color: Colors.white, size: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Get.bottomSheet(
+                        GetBuilder<add_followup_c.AddFollowupController>(
+                          init: add_followup_c.AddFollowupController()..customerId = controller.customerId,
+                          builder: (_) => const add_followup_v.AddFollowupView(),
+                        ),
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                      );
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDarkBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.add, color: Colors.white, size: 20),
+                      ),
                     ),
                   ),
                 ],
@@ -515,7 +552,7 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
                           spacing: 16,
                           runSpacing: 16,
                           children: filteredFollowUps.map((follow) => 
-                            _buildFollowUpCard(follow.description, '${follow.firstName} ${follow.lastName}', controller.formatDate(follow.date))
+                            _buildFollowUpCard(follow)
                           ).toList(),
                         ),
                       ],
@@ -528,7 +565,11 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
     });
   }
 
-  Widget _buildFollowUpCard(String title, String user, String date) {
+  Widget _buildFollowUpCard(FollowUp follow) {
+    final title = follow.description;
+    final user = '${follow.firstName} ${follow.lastName}'.trim();
+    final date = controller.formatDate(follow.date);
+
     return Container(
       width: Get.width > 700 ? 300 : Get.width - 32,
       padding: const EdgeInsets.all(12),
@@ -562,7 +603,21 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
                   ],
                 ),
               ),
-              const Icon(Icons.edit_square, size: 18, color: AppColors.textDark),
+              GestureDetector(
+                onTap: () {
+                  Get.bottomSheet(
+                    GetBuilder<add_followup_c.AddFollowupController>(
+                      init: add_followup_c.AddFollowupController()
+                        ..customerId = controller.customerId
+                        ..existingFollowup = follow,
+                      builder: (_) => const add_followup_v.AddFollowupView(),
+                    ),
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                  );
+                },
+                child: const Icon(Icons.edit_square, size: 18, color: AppColors.textDark),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -650,19 +705,66 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Image.asset('assets/images/pdf_icon.png', width: 24, height: 24),
+                  GestureDetector(
+                    onTap: () {
+                      if (filteredNotes.isEmpty) {
+                        Get.snackbar('Export', 'No notes to export', snackPosition: SnackPosition.BOTTOM);
+                        return;
+                      }
+                      PdfExportHelper.openTablePdfPreview(
+                        title: 'Customer Notes',
+                        filename: 'customer_notes.pdf',
+                        headers: ['Description', 'Added By', 'Date Added'],
+                        data: filteredNotes.map((note) => [
+                          note.description,
+                          note.addedByName,
+                          controller.formatDate(note.dateAdded),
+                        ]).toList(),
+                      );
+                    },
+                    child: Image.asset('assets/images/pdf_icon.png', width: 24, height: 24),
+                  ),
                   const SizedBox(width: 8),
-                  Image.asset('assets/images/excel_icon.png', width: 24, height: 24),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.cardDarkBlue,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.add, color: Colors.white, size: 18),
+                  GestureDetector(
+                    onTap: () {
+                      if (filteredNotes.isEmpty) {
+                        Get.snackbar('Export', 'No notes to export', snackPosition: SnackPosition.BOTTOM);
+                        return;
+                      }
+                      ExcelExportHelper.shareTableExcel(
+                        sheetName: 'Notes',
+                        filename: 'customer_notes.xlsx',
+                        headers: ['Description', 'Added By', 'Date Added'],
+                        data: filteredNotes.map((note) => [
+                          note.description,
+                          note.addedByName,
+                          controller.formatDate(note.dateAdded),
+                        ]).toList(),
+                      );
+                    },
+                    child: Image.asset('assets/images/excel_icon.png', width: 24, height: 24),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Get.bottomSheet(
+                        GetBuilder<add_note_c.AddNoteController>(
+                          init: add_note_c.AddNoteController()..customerId = controller.customerId,
+                          builder: (_) => const add_note_v.AddNoteView(),
+                        ),
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                      );
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDarkBlue,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.add, color: Colors.white, size: 18),
+                      ),
                     ),
                   ),
                 ],

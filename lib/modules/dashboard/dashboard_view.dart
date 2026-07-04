@@ -367,10 +367,10 @@ class DashboardView extends GetView<DashboardController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildActionIcon('Customers', Icons.people, onTap: () => controller.changeTabIndex(1)),
-                _buildActionIcon('Leads', Icons.phone_in_talk, onTap: () => controller.changeTabIndex(2)),
-                _buildActionIcon('Customer Conversion', Icons.how_to_reg, onTap: () => controller.changeTabIndex(2)),
-                _buildActionIcon('Follow-ups', Icons.event_available, onTap: () => controller.changeTabIndex(5)),
+                _buildActionIcon('Customers', Icons.people, onTap: () {}),
+                _buildActionIcon('Leads', Icons.phone_in_talk, onTap: () {}),
+                _buildActionIcon('Customer Conversion', Icons.how_to_reg, onTap: () {}),
+                _buildActionIcon('Follow-ups', Icons.event_available, onTap: () {}),
               ],
             ),
             const SizedBox(height: 24),
