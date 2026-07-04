@@ -4,7 +4,6 @@ import '../../core/app_colors.dart';
 import 'payments_controller.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
-import '../dashboard/widgets/main_drawer.dart';
 
 class PaymentsView extends GetView<PaymentsController> {
   const PaymentsView({super.key});
@@ -174,17 +173,38 @@ class PaymentsView extends GetView<PaymentsController> {
                   }
 
                   if (controller.filteredPayments.isEmpty) {
-                    return const Center(child: Text('No payments found'));
+                    return RefreshIndicator(
+                      onRefresh: controller.fetchPayments,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                                SizedBox(height: 16),
+                                Text('No Data Found', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   }
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 400,
-                      mainAxisExtent: 140, // Enough height for 3 rows
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
+                  return RefreshIndicator(
+                    onRefresh: controller.fetchPayments,
+                    child: GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 24),
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 400,
+                        mainAxisExtent: 140, // Enough height for 3 rows
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
                     itemCount: controller.filteredPayments.length,
                     itemBuilder: (context, index) {
                       final payment = controller.filteredPayments[index];
@@ -339,14 +359,15 @@ class PaymentsView extends GetView<PaymentsController> {
                                   ],
                                 ),
                               ],
-                            )
+                            ),
                           ],
                         ),
                       );
                     },
-                  );
-                }),
-              ),
+                  ),
+                );
+              }),
+            ),
             ],
           ),
         ),

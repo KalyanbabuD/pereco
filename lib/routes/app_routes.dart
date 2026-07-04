@@ -16,4 +16,7 @@ abstract class Routes {
   static const PROPOSAL_DETAILS = '/proposal-details';
   static const FOLLOWUPS = '/followups';
   static const PAYMENT_DETAILS = '/payment-details';
+  static const LEAD_REPORTS = '/lead-reports';
+  static const CUSTOMER_REPORTS = '/customer-reports';
+  static const FOLLOWUP_REPORTS = '/followup-reports';
 }

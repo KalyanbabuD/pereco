@@ -156,11 +156,31 @@ class ProductsView extends GetView<ProductsController> {
                   }
 
                   if (controller.filteredProducts.isEmpty) {
-                    return const Center(child: Text('No products found'));
+                    return RefreshIndicator(
+                      onRefresh: controller.fetchProducts,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.4,
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                                SizedBox(height: 16),
+                                Text('No Data Found', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   }
 
-                  return SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
+                  return RefreshIndicator(
+                    onRefresh: controller.fetchProducts,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         int crossAxisCount = (constraints.maxWidth / 450).ceil();
@@ -278,6 +298,7 @@ class ProductsView extends GetView<ProductsController> {
                           }),
                         );
                       },
+                    ),
                     ),
                   );
                 }),

@@ -13,7 +13,9 @@ import '../followups/followups_controller.dart';
 import '../payments/payments_view.dart';
 import '../products/products_view.dart';
 import '../expenses/expenses_view.dart';
-import '../../routes/app_routes.dart';
+import '../reports/lead_reports_view.dart';
+import '../reports/customer_reports_view.dart';
+import '../reports/followup_reports_view.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
@@ -140,6 +142,15 @@ class DashboardView extends GetView<DashboardController> {
             break;
           case 8:
             content = const ExpensesView();
+            break;
+          case 9:
+            content = const LeadReportsView();
+            break;
+          case 10:
+            content = const CustomerReportsView();
+            break;
+          case 11:
+            content = const FollowupReportsView();
             break;
           default:
             content = _buildHomeContent();

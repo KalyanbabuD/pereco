@@ -28,6 +28,9 @@ import '../modules/payments/payment_details_view.dart';
 import '../modules/payments/payment_details_binding.dart';
 import '../modules/products/products_view.dart';
 import '../modules/reports/reports_view.dart';
+import '../modules/reports/lead_reports_view.dart';
+import '../modules/reports/customer_reports_view.dart';
+import '../modules/reports/followup_reports_view.dart';
 import '../modules/followups/followups_view.dart';
 import '../modules/followups/followups_binding.dart';
 import 'app_routes.dart';
@@ -118,6 +121,18 @@ class AppPages {
       name: Routes.FOLLOWUPS,
       page: () => const FollowupsView(),
       binding: FollowupsBinding(),
+    ),
+    GetPage(
+      name: Routes.LEAD_REPORTS,
+      page: () => const LeadReportsView(),
+    ),
+    GetPage(
+      name: Routes.CUSTOMER_REPORTS,
+      page: () => const CustomerReportsView(),
+    ),
+    GetPage(
+      name: Routes.FOLLOWUP_REPORTS,
+      page: () => const FollowupReportsView(),
     ),
   ];
 }

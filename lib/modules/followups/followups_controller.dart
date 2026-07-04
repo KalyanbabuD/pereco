@@ -3,7 +3,11 @@ import 'package:get/get.dart';
 import '../../core/network/api_provider.dart';
 import '../../core/network/api_endpoints.dart';
 import '../../data/models/reminder_model.dart';
+import '../../data/models/staff_model.dart';
+import '../../data/models/customer_model.dart';
+import '../../data/models/lead_model.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FollowupsController extends GetxController {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
@@ -11,17 +15,44 @@ class FollowupsController extends GetxController {
   final followups = <Reminder>[].obs;
   final filteredFollowups = <Reminder>[].obs;
   final isLoading = true.obs;
+  
+  // Dependencies for Add/Edit form
+  final staffList = <Staff>[].obs;
+  final customersList = <Customer>[].obs;
+  final leadsList = <Lead>[].obs;
+  
   final TextEditingController searchController = TextEditingController();
+  final TextEditingController filterSearchController = TextEditingController();
+
+  // Filter states
+  final isFilterVisible = false.obs;
+  final filterType = 'All'.obs; // 'All', 'Lead', 'Customer'
+  final selectedFilterId = RxnInt();
+
+  void onFilterTypeChanged(String type) {
+    filterType.value = type;
+    selectedFilterId.value = null;
+    if (type == 'All') {
+      fetchFollowups();
+    }
+  }
+
+  void onFilterEntitySelected(int id) {
+    selectedFilterId.value = id;
+    fetchFollowups();
+  }
 
   @override
   void onInit() {
     super.onInit();
     fetchFollowups();
+    fetchDependencies();
   }
 
   @override
   void onClose() {
     searchController.dispose();
+    filterSearchController.dispose();
     super.onClose();
   }
 
@@ -40,13 +71,19 @@ class FollowupsController extends GetxController {
 
   void clearSearch() {
     searchController.clear();
-    searchFollowups('');
+    fetchFollowups();
   }
 
   Future<void> fetchFollowups() async {
     try {
       isLoading.value = true;
-      final response = await _apiProvider.get('${ApiEndpoints.getReminders}?staffid=0');
+      
+      String url = '${ApiEndpoints.getReminders}?staffid=0';
+      if (filterType.value != 'All' && selectedFilterId.value != null) {
+        url += '&rel_id=${selectedFilterId.value}&rel_type=${filterType.value}';
+      }
+      
+      final response = await _apiProvider.get(url);
 
       if (response.statusCode == 200 && response.body != null) {
         Map<String, dynamic> jsonResponse;
@@ -67,5 +104,93 @@ class FollowupsController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> fetchDependencies() async {
+    try {
+      // Fetch Staff
+      final staffResponse = await _apiProvider.get(ApiEndpoints.getStaffDropdown);
+      print('--- staffResponse status: ${staffResponse.statusCode}');
+      if (staffResponse.statusCode == 200 && staffResponse.body != null) {
+        print('--- staffResponse body type: ${staffResponse.body.runtimeType}');
+        try {
+          final jsonMap = staffResponse.body is String ? jsonDecode(staffResponse.bodyString!) : staffResponse.body;
+          final staffData = StaffResponse.fromJson(jsonMap);
+          print('--- staffData status: ${staffData.status}, count: ${staffData.resultData?.length}');
+          if (staffData.status == true && staffData.resultData != null) {
+            staffList.value = staffData.resultData!;
+          }
+        } catch (e) {
+          print('--- Error parsing staffData: $e');
+        }
+      }
+
+      // Fetch Customers
+      final customersResponse = await _apiProvider.get(ApiEndpoints.getCustomers);
+      if (customersResponse.statusCode == 200 && customersResponse.body != null) {
+        final customersData = CustomerResponse.fromJson(customersResponse.body is String ? jsonDecode(customersResponse.bodyString!) : customersResponse.body);
+        if (customersData.status == true && customersData.resultData != null) {
+          customersList.value = customersData.resultData!;
+        }
+      }
+
+      // Fetch Leads
+      final leadsResponse = await _apiProvider.get(ApiEndpoints.getLeads);
+      if (leadsResponse.statusCode == 200 && leadsResponse.body != null) {
+        final leadsData = LeadResponse.fromJson(leadsResponse.body is String ? jsonDecode(leadsResponse.bodyString!) : leadsResponse.body);
+        if (leadsData.status == true && leadsData.resultData != null) {
+          leadsList.value = leadsData.resultData!;
+        }
+      }
+    } catch (e) {
+      print('Error fetching dependencies: $e');
+    }
+  }
+
+  Future<bool> addReminder(String description, String date, String relType, int relId, int staffId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final loginStaffId = prefs.getInt('staffid') ?? 0;
+
+      final response = await _apiProvider.post(
+        ApiEndpoints.addReminder,
+        {
+          'description': description,
+          'date': date,
+          'rel_id': relId,
+          'rel_type': relType,
+          'staff': staffId,
+          'creator': loginStaffId,
+        },
+      );
+      if (response.statusCode == 200) {
+        clearSearch();
+        return true;
+      }
+    } catch (e) {
+      print('Error adding reminder: $e');
+    }
+    return false;
+  }
+
+  Future<bool> updateReminder(int id, String description, String date, int staffId) async {
+    try {
+      final response = await _apiProvider.post(
+        ApiEndpoints.updateReminder,
+        {
+          'id': id,
+          'description': description,
+          'date': date,
+          'staff': staffId,
+        },
+      );
+      if (response.statusCode == 200) {
+        clearSearch();
+        return true;
+      }
+    } catch (e) {
+      print('Error updating reminder: $e');
+    }
+    return false;
   }
 }

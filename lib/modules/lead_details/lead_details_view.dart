@@ -369,7 +369,19 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                 child: filteredNotes.isEmpty 
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [SizedBox(height: 100), Center(child: Text("No notes found"))],
+                      children: [
+                        SizedBox(height: Get.height * 0.3),
+                        const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                              SizedBox(height: 16),
+                              Text('No Data Found', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                            ],
+                          ),
+                        )
+                      ],
                     )
                   : ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -543,7 +555,19 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                 child: filteredProposals.isEmpty 
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [SizedBox(height: 100), Center(child: Text("No proposals found"))],
+                      children: [
+                        SizedBox(height: Get.height * 0.3),
+                        const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                              SizedBox(height: 16),
+                              Text('No Data Found', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                            ],
+                          ),
+                        )
+                      ],
                     )
                   : ListView(
                       physics: const AlwaysScrollableScrollPhysics(),

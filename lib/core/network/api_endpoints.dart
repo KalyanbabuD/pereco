@@ -6,6 +6,8 @@ class ApiEndpoints {
   static const String getLeadById = '/leads/GetLeadById';
   static const String getProposals = '/proposal/GetProposals';
   static const String getReminders = '/reminder/GetReminders';
+  static const String addReminder = '/reminder/AddReminder';
+  static const String updateReminder = '/reminder/UpdateReminder';
   static const String getNotes = '/notes/GetNotes';
   static const String getCustomers = '/customers/GetCustomers';
   static const String getCustomerDetails = '/customers/GetCustomerDetails';

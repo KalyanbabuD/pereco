@@ -75,9 +75,9 @@ class MainDrawer extends GetView<DashboardController> {
               iconColor: Colors.grey[700],
               collapsedIconColor: Colors.grey[700],
               children: [
-                _buildSubItem('Leads', route: Routes.REPORTS),
-                _buildSubItem('Customers', route: Routes.REPORTS),
-                _buildSubItem('Follow-Ups', route: Routes.REPORTS),
+                _buildSubItem('Leads', tabIndex: 9),
+                _buildSubItem('Customers', tabIndex: 10),
+                _buildSubItem('Follow-Ups', tabIndex: 11),
               ],
             ),
           ),

@@ -128,7 +128,24 @@ class TodoController extends GetxController {
           'item_order': 1,
         },
       );
-      if (response.statusCode == 200) {
+      
+      bool isSuccess = false;
+      if (!response.hasError) {
+        isSuccess = true;
+      }
+      
+      if (response.body != null) {
+         try {
+           final body = response.body is String ? jsonDecode(response.bodyString!) : response.body;
+           if (body['Status'] == true || body['status'] == true) {
+             isSuccess = true;
+           } else if (body['Status'] == false || body['status'] == false) {
+             isSuccess = false;
+           }
+         } catch (_) {}
+      }
+
+      if (isSuccess) {
         clearSearch();
         return true;
       }
@@ -152,7 +169,24 @@ class TodoController extends GetxController {
           'item_order': 1,
         },
       );
-      if (response.statusCode == 200) {
+      
+      bool isSuccess = false;
+      if (!response.hasError) {
+        isSuccess = true;
+      }
+      
+      if (response.body != null) {
+         try {
+           final body = response.body is String ? jsonDecode(response.bodyString!) : response.body;
+           if (body['Status'] == true || body['status'] == true) {
+             isSuccess = true;
+           } else if (body['Status'] == false || body['status'] == false) {
+             isSuccess = false;
+           }
+         } catch (_) {}
+      }
+
+      if (isSuccess) {
         clearSearch();
         return true;
       }
@@ -168,7 +202,24 @@ class TodoController extends GetxController {
         ApiEndpoints.deleteTodo,
         {'todoid': todoid},
       );
-      if (response.statusCode == 200) {
+      
+      bool isSuccess = false;
+      if (!response.hasError) {
+        isSuccess = true;
+      }
+      
+      if (response.body != null) {
+         try {
+           final body = response.body is String ? jsonDecode(response.bodyString!) : response.body;
+           if (body['Status'] == true || body['status'] == true) {
+             isSuccess = true;
+           } else if (body['Status'] == false || body['status'] == false) {
+             isSuccess = false;
+           }
+         } catch (_) {}
+      }
+
+      if (isSuccess) {
         clearSearch();
         return true;
       }
