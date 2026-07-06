@@ -4,9 +4,6 @@ import '../../core/app_colors.dart';
 import 'add_expense_controller.dart';
 import '../../data/models/expense_dropdown_models.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import '../customers/add_customer_view.dart' as import_add_customer;
-import '../customers/add_customer_controller.dart' as import_add_customer;
-import 'expenses_controller.dart';
 
 class AddExpenseView extends GetView<AddExpenseController> {
   const AddExpenseView({super.key});

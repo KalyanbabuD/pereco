@@ -83,7 +83,6 @@ class _PdfPreviewScreen extends mt.StatelessWidget {
   final String filename;
 
   const _PdfPreviewScreen({
-    super.key,
     required this.title,
     required this.pdfBytes,
     required this.filename,

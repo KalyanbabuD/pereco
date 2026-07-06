@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/app_colors.dart';
 import '../dashboard_controller.dart';
-import '../../../routes/app_routes.dart';
 
 class MainDrawer extends GetView<DashboardController> {
   const MainDrawer({super.key});
