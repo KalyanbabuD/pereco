@@ -55,13 +55,11 @@ class MainDrawer extends GetView<DashboardController> {
               iconColor: Colors.grey[700],
               collapsedIconColor: Colors.grey[700],
               children: [
-                _buildSubItem('Collections', route: null),
+                _buildSubItem('Collections', tabIndex: 13),
                 _buildSubItem('Payments', tabIndex: 6),
               ],
             ),
           ),
-
-          _buildDrawerItem(Icons.inventory_2, 'Products', tabIndex: 7),
           _buildDrawerItem(Icons.payments, 'Expenses', tabIndex: 8),
           _buildDrawerItem(Icons.list_alt, 'Todo', isSelected: controller.currentIndex.value == 3, tabIndex: 3),
           _buildDrawerItem(Icons.phone, 'Follow Up', isSelected: controller.currentIndex.value == 5, tabIndex: 5),
@@ -80,6 +78,7 @@ class MainDrawer extends GetView<DashboardController> {
               ],
             ),
           ),
+          _buildDrawerItem(Icons.settings, 'Settings', isSelected: controller.currentIndex.value == 12, tabIndex: 12),
         ],
       ),
     );

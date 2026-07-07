@@ -37,4 +37,10 @@ class ApiEndpoints {
   static const String updateTodo = '/todo/UpdateTodo';
   static const String deleteTodo = '/todo/DeleteTodo';
   static const String getStaffDropdown = '/staff/GetStaffDropdown';
+  static const String getOrgSettings = '/dashboard/GetOrgSettings';
+  static const String getCreditNotes = '/creditnotes/GetCreditNotes';
+  static const String addCreditNote = '/creditnotes/AddCreditNote';
+  static const String getInvoices = '/invoice/GetInvoices';
+  static const String addPayment = '/payments/AddPayment';
+  static const String paymentsGetPaymentModes = '/payments/GetPaymentModes';
 }

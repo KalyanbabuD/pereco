@@ -27,6 +27,10 @@ class Payment {
   final String? paymentModeName;
   final int? invoiceNumber;
   final String? invoicePrefix;
+  final String? invoiceAmount;
+  final int? clientid;
+  final bool? status;
+  final String? clientName;
 
   Payment({
     this.id,
@@ -41,6 +45,10 @@ class Payment {
     this.paymentModeName,
     this.invoiceNumber,
     this.invoicePrefix,
+    this.invoiceAmount,
+    this.clientid,
+    this.status,
+    this.clientName,
   });
 
   factory Payment.fromJson(Map<String, dynamic> json) {
@@ -57,6 +65,10 @@ class Payment {
       paymentModeName: json['PaymentModeName'],
       invoiceNumber: json['InvoiceNumber'],
       invoicePrefix: json['InvoicePrefix'],
+      invoiceAmount: json['invoiceAmount']?.toString(),
+      clientid: json['clientid'],
+      status: json['status'] == 1 || json['status'] == true || json['status']?.toString().toLowerCase() == 'true',
+      clientName: json['ClientName'],
     );
   }
 }

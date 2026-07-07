@@ -16,6 +16,8 @@ import '../expenses/expenses_view.dart';
 import '../reports/lead_reports_view.dart';
 import '../reports/customer_reports_view.dart';
 import '../reports/followup_reports_view.dart';
+import '../settings/settings_view.dart';
+import '../collections/collections_view.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
@@ -151,6 +153,12 @@ class DashboardView extends GetView<DashboardController> {
             break;
           case 11:
             content = const FollowupReportsView();
+            break;
+          case 12:
+            content = const SettingsView();
+            break;
+          case 13:
+            content = const CollectionsView();
             break;
           default:
             content = _buildHomeContent();

@@ -34,30 +34,7 @@ class DashboardController extends GetxController {
 
   void changeTabIndex(int index) {
     currentIndex.value = index;
-    if (Get.isRegistered<LeadsController>()) {
-      Get.find<LeadsController>().clearSearch();
-    }
-    if (Get.isRegistered<CustomersController>()) {
-      Get.find<CustomersController>().clearSearch();
-    }
-    if (Get.isRegistered<ProposalController>()) {
-      Get.find<ProposalController>().clearSearch();
-    }
-    if (Get.isRegistered<FollowupsController>()) {
-      Get.find<FollowupsController>().clearSearch();
-    }
-    if (Get.isRegistered<PaymentsController>()) {
-      Get.find<PaymentsController>().clearSearch();
-    }
-    if (Get.isRegistered<ProductsController>()) {
-      Get.find<ProductsController>().clearSearch();
-    }
-    if (Get.isRegistered<ExpensesController>()) {
-      Get.find<ExpensesController>().clearSearch();
-    }
-    if (Get.isRegistered<TodoController>()) {
-      Get.find<TodoController>().clearSearch();
-    }
+    scaffoldKey.currentState?.closeDrawer();
   }
 
   void openDrawer() {
