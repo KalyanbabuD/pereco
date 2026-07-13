@@ -37,6 +37,8 @@ import '../modules/followups/followups_view.dart';
 import '../modules/followups/followups_binding.dart';
 import '../modules/expenses/add_expense_view.dart';
 import '../modules/expenses/add_expense_binding.dart';
+import '../modules/notifications/notifications_view.dart';
+import '../modules/notifications/notifications_binding.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -82,6 +84,11 @@ class AppPages {
       name: Routes.TODO,
       page: () => const TodoView(),
       binding: TodoBinding(),
+    ),
+    GetPage(
+      name: Routes.NOTIFICATIONS,
+      page: () => const NotificationsView(),
+      binding: NotificationsBinding(),
     ),
     GetPage(
       name: Routes.INVOICES,

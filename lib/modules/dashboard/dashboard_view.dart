@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/app_colors.dart';
+import '../../routes/app_routes.dart';
 import 'dashboard_controller.dart';
 import 'widgets/main_drawer.dart';
 import '../leads/leads_view.dart';
@@ -49,6 +50,16 @@ class DashboardView extends GetView<DashboardController> {
         ),
         centerTitle: true,
         actions: [
+          Obx(() => IconButton(
+            icon: Badge(
+              isLabelVisible: controller.unreadNotificationCount.value > 0,
+              label: Text(controller.unreadNotificationCount.value.toString()),
+              child: const Icon(Icons.notifications, color: AppColors.cardDarkBlue),
+            ),
+            onPressed: () {
+              Get.toNamed(Routes.NOTIFICATIONS)?.then((_) => controller.fetchUnreadNotificationCount());
+            },
+          )),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: AppColors.cardDarkBlue),
             color: Colors.white,

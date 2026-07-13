@@ -43,4 +43,5 @@ class ApiEndpoints {
   static const String getInvoices = '/invoice/GetInvoices';
   static const String addPayment = '/payments/AddPayment';
   static const String paymentsGetPaymentModes = '/payments/GetPaymentModes';
+  static const String getNotifications = '/notifications/GetNotifications';
 }

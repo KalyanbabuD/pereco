@@ -15,27 +15,24 @@ class SplashView extends GetView<SplashController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TweenAnimationBuilder<Offset>(
-              tween: Tween<Offset>(begin: const Offset(-50, 0), end: Offset.zero),
+              tween: Tween<Offset>(
+                begin: const Offset(-50, 0),
+                end: Offset.zero,
+              ),
               duration: const Duration(seconds: 1),
               curve: Curves.easeOut,
               builder: (context, offset, child) {
-                return Transform.translate(
-                  offset: offset,
-                  child: child,
-                );
+                return Transform.translate(offset: offset, child: child);
               },
               child: TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0.0, end: 1.0),
                 duration: const Duration(seconds: 1),
                 curve: Curves.easeIn,
                 builder: (context, opacity, child) {
-                  return Opacity(
-                    opacity: opacity,
-                    child: child,
-                  );
+                  return Opacity(opacity: opacity, child: child);
                 },
                 child: Image.asset(
-                  'assets/images/pocketbiz.png',
+                  'assets/images/pocketbizWithIcon.png',
                   width: 320, // Increased size significantly
                   fit: BoxFit.contain,
                 ),
@@ -43,24 +40,21 @@ class SplashView extends GetView<SplashController> {
             ),
             const SizedBox(height: 16),
             TweenAnimationBuilder<Offset>(
-              tween: Tween<Offset>(begin: const Offset(0, 50), end: Offset.zero),
+              tween: Tween<Offset>(
+                begin: const Offset(0, 50),
+                end: Offset.zero,
+              ),
               duration: const Duration(seconds: 1),
               curve: Curves.easeOut,
               builder: (context, offset, child) {
-                return Transform.translate(
-                  offset: offset,
-                  child: child,
-                );
+                return Transform.translate(offset: offset, child: child);
               },
               child: TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0.0, end: 1.0),
                 duration: const Duration(seconds: 1),
                 curve: Curves.easeIn,
                 builder: (context, opacity, child) {
-                  return Opacity(
-                    opacity: opacity,
-                    child: child,
-                  );
+                  return Opacity(opacity: opacity, child: child);
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -94,7 +88,7 @@ class SplashView extends GetView<SplashController> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

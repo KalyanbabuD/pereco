@@ -13,6 +13,8 @@ import 'widgets/add_note_controller.dart' as add_note_c;
 import 'widgets/add_note_view.dart' as add_note_v;
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
+import '../dashboard/dashboard_controller.dart';
+import '../../routes/app_routes.dart';
 
 class CustomerDetailsView extends GetView<CustomerDetailsController> {
   const CustomerDetailsView({super.key});
@@ -69,6 +71,46 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
           _buildFollowUpsTab(),
           _buildNotesTab(),
         ],
+      ),
+      bottomNavigationBar: GetBuilder<DashboardController>(
+        init: Get.isRegistered<DashboardController>() ? Get.find<DashboardController>() : Get.put(DashboardController()),
+        builder: (dashController) {
+          return Obx(
+            () => ClipPath(
+              clipper: _BottomNavClipper(),
+              child: Container(
+                color: AppColors.cardDarkBlue,
+                padding: const EdgeInsets.only(top: 16, bottom: 4),
+                child: Theme(
+                  data: ThemeData(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                  ),
+                  child: BottomNavigationBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    type: BottomNavigationBarType.fixed,
+                    currentIndex: dashController.currentIndex.value < 4 ? dashController.currentIndex.value : 0,
+                    selectedItemColor: dashController.currentIndex.value < 4 ? Colors.white : Colors.white54,
+                    unselectedItemColor: Colors.white54,
+                    selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+                    onTap: (index) {
+                      dashController.changeTabIndex(index);
+                      Get.until((route) => route.settings.name == Routes.DASHBOARD);
+                    },
+                    items: const [
+                      BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+                      BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Customers'),
+                      BottomNavigationBarItem(icon: Icon(Icons.headset_mic), label: 'Leads'),
+                      BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Todo'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -867,4 +909,20 @@ class CustomerDetailsView extends GetView<CustomerDetailsController> {
       ),
     );
   }
+}
+
+class _BottomNavClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(0, 30);
+    path.quadraticBezierTo(size.width / 2, -15, size.width, 30);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

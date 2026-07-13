@@ -7,7 +7,8 @@ import '../../data/models/lead_details_models.dart'; // Re-use FollowUp and Note
 import '../../core/network/api_endpoints.dart';
 import '../../core/network/api_provider.dart';
 
-class CustomerDetailsController extends GetxController with GetSingleTickerProviderStateMixin {
+class CustomerDetailsController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   late TabController tabController;
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
 
@@ -20,14 +21,15 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
 
   final followUpsSearch = ''.obs;
   final notesSearch = ''.obs;
-  final contactsSearch = ''.obs; // Assuming search for contacts tab if it was a list
+  final contactsSearch =
+      ''.obs; // Assuming search for contacts tab if it was a list
 
   int customerId = 0;
 
   @override
   void onInit() {
     super.onInit();
-    
+
     int initialIndex = 0;
     if (Get.arguments != null) {
       if (Get.arguments['initialTabIndex'] != null) {
@@ -37,9 +39,13 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
         customerId = Get.arguments['customerId'] as int;
       }
     }
-    
-    tabController = TabController(length: 4, vsync: this, initialIndex: initialIndex);
-    
+
+    tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
+
     fetchCustomerDetails();
   }
 
@@ -51,14 +57,16 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
 
   Future<void> fetchCustomerDetails() async {
     if (customerId == 0) return;
-    
+
     try {
       isLoading.value = true;
       final prefs = await SharedPreferences.getInstance();
       final staffId = prefs.getInt('staffid') ?? 0;
 
       // 1. Fetch Customer Profile & Contact Details
-      final profileResponse = await _apiProvider.get('${ApiEndpoints.getCustomerDetails}?CusId=$customerId');
+      final profileResponse = await _apiProvider.get(
+        '${ApiEndpoints.getCustomerDetails}?CusId=$customerId',
+      );
       if (profileResponse.statusCode == 200 && profileResponse.body != null) {
         Map<String, dynamic> jsonResponse;
         if (profileResponse.body is Map<String, dynamic>) {
@@ -68,29 +76,37 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
         }
 
         final customerResponse = CustomerResponse.fromJson(jsonResponse);
-        if (customerResponse.status == true && customerResponse.resultData != null && customerResponse.resultData!.isNotEmpty) {
+        if (customerResponse.status == true &&
+            customerResponse.resultData != null &&
+            customerResponse.resultData!.isNotEmpty) {
           customerDetails.value = customerResponse.resultData!.first;
         }
       }
 
       // 2. Fetch Follow-Ups
-      final followUpsResponse = await _apiProvider.get('${ApiEndpoints.getReminders}?rel_id=$customerId&rel_type=Customer&staffid=$staffId');
-      if (followUpsResponse.statusCode == 200 && followUpsResponse.body != null) {
+      final followUpsResponse = await _apiProvider.get(
+        '${ApiEndpoints.getReminders}?rel_id=$customerId&rel_type=Customer&staffid=0',
+      );
+      if (followUpsResponse.statusCode == 200 &&
+          followUpsResponse.body != null) {
         Map<String, dynamic> jsonResponse;
         if (followUpsResponse.body is Map<String, dynamic>) {
           jsonResponse = followUpsResponse.body;
         } else {
           jsonResponse = jsonDecode(followUpsResponse.bodyString!);
         }
-        
-        if (jsonResponse['Status'] == true && jsonResponse['ResultData'] != null) {
+
+        if (jsonResponse['Status'] == true &&
+            jsonResponse['ResultData'] != null) {
           final list = jsonResponse['ResultData'] as List;
           followUps.value = list.map((e) => FollowUp.fromJson(e)).toList();
         }
       }
 
       // 3. Fetch Notes
-      final notesResponse = await _apiProvider.get('${ApiEndpoints.getNotes}?rel_id=$customerId&rel_type=Customer');
+      final notesResponse = await _apiProvider.get(
+        '${ApiEndpoints.getNotes}?rel_id=$customerId&rel_type=Customer',
+      );
       if (notesResponse.statusCode == 200 && notesResponse.body != null) {
         Map<String, dynamic> jsonResponse;
         if (notesResponse.body is Map<String, dynamic>) {
@@ -98,15 +114,18 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
         } else {
           jsonResponse = jsonDecode(notesResponse.bodyString!);
         }
-        
-        if (jsonResponse['Status'] == true && jsonResponse['ResultData'] != null) {
+
+        if (jsonResponse['Status'] == true &&
+            jsonResponse['ResultData'] != null) {
           final list = jsonResponse['ResultData'] as List;
           notes.value = list.map((e) => Note.fromJson(e)).toList();
         }
       }
 
       // 4. Fetch Contacts
-      final contactsResponse = await _apiProvider.get('${ApiEndpoints.getContacts}?userid=$customerId');
+      final contactsResponse = await _apiProvider.get(
+        '${ApiEndpoints.getContacts}?userid=$customerId',
+      );
       if (contactsResponse.statusCode == 200 && contactsResponse.body != null) {
         Map<String, dynamic> jsonResponse;
         if (contactsResponse.body is Map<String, dynamic>) {
@@ -115,12 +134,12 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
           jsonResponse = jsonDecode(contactsResponse.bodyString!);
         }
 
-        if (jsonResponse['Status'] == true && jsonResponse['ResultData'] != null) {
+        if (jsonResponse['Status'] == true &&
+            jsonResponse['ResultData'] != null) {
           final list = jsonResponse['ResultData'] as List;
           contacts.value = list.map((e) => Contact.fromJson(e)).toList();
         }
       }
-
     } catch (e) {
       Get.snackbar('Error', 'Failed to load customer details');
     } finally {
@@ -133,7 +152,20 @@ class CustomerDetailsController extends GetxController with GetSingleTickerProvi
     if (dateString == null || dateString.isEmpty) return 'N/A';
     try {
       final date = DateTime.parse(dateString);
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       return '${date.day} ${months[date.month - 1]} ${date.year}';
     } catch (e) {
       return dateString.split('T').first;

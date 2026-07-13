@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'proposal_controller.dart';
 import '../../core/app_colors.dart';
+import '../dashboard/dashboard_controller.dart';
+import '../../routes/app_routes.dart';
 
 class ProposalDetailsView extends GetView<ProposalController> {
   const ProposalDetailsView({super.key});
@@ -50,6 +52,46 @@ class ProposalDetailsView extends GetView<ProposalController> {
           ),
         );
       }),
+      bottomNavigationBar: GetBuilder<DashboardController>(
+        init: Get.isRegistered<DashboardController>() ? Get.find<DashboardController>() : Get.put(DashboardController()),
+        builder: (dashController) {
+          return Obx(
+            () => ClipPath(
+              clipper: _BottomNavClipper(),
+              child: Container(
+                color: AppColors.cardDarkBlue,
+                padding: const EdgeInsets.only(top: 16, bottom: 4),
+                child: Theme(
+                  data: ThemeData(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                  ),
+                  child: BottomNavigationBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    type: BottomNavigationBarType.fixed,
+                    currentIndex: dashController.currentIndex.value < 4 ? dashController.currentIndex.value : 0,
+                    selectedItemColor: dashController.currentIndex.value < 4 ? Colors.white : Colors.white54,
+                    unselectedItemColor: Colors.white54,
+                    selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+                    onTap: (index) {
+                      dashController.changeTabIndex(index);
+                      Get.until((route) => route.settings.name == Routes.DASHBOARD);
+                    },
+                    items: const [
+                      BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+                      BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Customers'),
+                      BottomNavigationBarItem(icon: Icon(Icons.headset_mic), label: 'Leads'),
+                      BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Todo'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -311,4 +353,20 @@ class ProposalDetailsView extends GetView<ProposalController> {
       ],
     );
   }
+}
+
+class _BottomNavClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(0, 30);
+    path.quadraticBezierTo(size.width / 2, -15, size.width, 30);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

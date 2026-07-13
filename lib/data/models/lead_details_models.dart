@@ -15,6 +15,8 @@ class LeadProfile {
   final String statusName;
   final String assignedTo;
   final String dateAdded;
+  final String? dateAssigned;
+  final String? lastContact;
 
   LeadProfile({
     required this.id,
@@ -33,6 +35,8 @@ class LeadProfile {
     required this.statusName,
     required this.assignedTo,
     required this.dateAdded,
+    this.dateAssigned,
+    this.lastContact,
   });
 
   factory LeadProfile.fromJson(Map<String, dynamic> json) {
@@ -53,6 +57,8 @@ class LeadProfile {
       statusName: json['StatusName'] ?? '',
       assignedTo: json['AssignedTo'] ?? '',
       dateAdded: json['dateadded'] ?? '',
+      dateAssigned: json['dateassigned']?.toString(),
+      lastContact: json['lastcontact']?.toString(),
     );
   }
 }

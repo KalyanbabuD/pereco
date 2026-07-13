@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/network/api_provider.dart';
 import '../../core/network/api_endpoints.dart';
 import '../../data/models/dashboard_response.dart';
+import '../../data/models/notification_model.dart';
 
 import '../leads/leads_controller.dart';
 import '../customers/customers_controller.dart';
@@ -23,6 +24,7 @@ class DashboardController extends GetxController {
   final errorMessage = ''.obs;
   final dashboardData = Rxn<DashboardData>();
   final userName = ''.obs;
+  final unreadNotificationCount = 0.obs;
 
   final ApiProvider _apiProvider = Get.put(ApiProvider());
 
@@ -30,6 +32,7 @@ class DashboardController extends GetxController {
   void onInit() {
     super.onInit();
     fetchDashboardData();
+    fetchUnreadNotificationCount();
   }
 
   void changeTabIndex(int index) {
@@ -76,6 +79,26 @@ class DashboardController extends GetxController {
       errorMessage.value = 'An error occurred: $e';
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchUnreadNotificationCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final staffId = prefs.getInt('staffid');
+      if (staffId == null) return;
+      
+      final response = await _apiProvider.get('${ApiEndpoints.getNotifications}?userid=$staffId');
+      
+      if (response.statusCode == 200 && response.body != null) {
+        final notificationResponse = NotificationResponse.fromJson(response.body);
+        if (notificationResponse.status) {
+          int count = notificationResponse.receivedNotifications.where((n) => n.isRead == 0).length;
+          unreadNotificationCount.value = count;
+        }
+      }
+    } catch (e) {
+      print('Error fetching notifications count: $e');
     }
   }
 
