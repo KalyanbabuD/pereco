@@ -13,7 +13,7 @@ class AddLeadController extends GetxController {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
 
   final isLoading = false.obs;
-  
+
   // Existing Lead if in Edit mode
   Lead? existingLead;
 
@@ -52,19 +52,16 @@ class AddLeadController extends GetxController {
       companyController.text = existingLead!.company ?? '';
       addressController.text = existingLead!.address ?? '';
       // Description is not part of the standard list model, might be empty here.
-      
+
       selectedSourceId.value = existingLead!.sourceId;
-      // Note: AssignedTo in Lead model is string in list, we might not have the ID directly unless we parse it. 
+      // Note: AssignedTo in Lead model is string in list, we might not have the ID directly unless we parse it.
       // If we don't have it, we leave it null.
     }
   }
 
   Future<void> fetchInitialData() async {
     isLoading.value = true;
-    await Future.wait([
-      fetchSources(),
-      fetchStaff(),
-    ]);
+    await Future.wait([fetchSources(), fetchStaff()]);
     isLoading.value = false;
   }
 
@@ -72,7 +69,9 @@ class AddLeadController extends GetxController {
     try {
       final res = await _apiProvider.get(ApiEndpoints.getLeadSources);
       if (res.statusCode == 200 && res.body != null) {
-        final data = res.body is String ? jsonDecode(res.bodyString!) : res.body;
+        final data = res.body is String
+            ? jsonDecode(res.bodyString!)
+            : res.body;
         final model = LeadSourceResponse.fromJson(data);
         if (model.status == true && model.resultData != null) {
           sources.value = model.resultData!;
@@ -87,17 +86,21 @@ class AddLeadController extends GetxController {
     try {
       final res = await _apiProvider.get(ApiEndpoints.getStaffDropdown);
       if (res.statusCode == 200 && res.body != null) {
-        final data = res.body is String ? jsonDecode(res.bodyString!) : res.body;
+        final data = res.body is String
+            ? jsonDecode(res.bodyString!)
+            : res.body;
         final model = StaffResponse.fromJson(data);
         if (model.status == true && model.resultData != null) {
           staffList.value = model.resultData!;
-          
+
           // Try to match existingLead assignedTo name if we couldn't get ID
           if (existingLead != null && selectedStaffId.value == null) {
-             final staff = staffList.firstWhereOrNull((s) => s.fullName == existingLead!.assignedTo);
-             if (staff != null) {
-               selectedStaffId.value = staff.staffid;
-             }
+            final staff = staffList.firstWhereOrNull(
+              (s) => s.fullName == existingLead!.assignedTo,
+            );
+            if (staff != null) {
+              selectedStaffId.value = staff.staffid;
+            }
           }
         }
       }
@@ -108,19 +111,35 @@ class AddLeadController extends GetxController {
 
   Future<void> submitLead() async {
     if (nameController.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Name is required', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Name is required',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
     if (mobileController.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Mobile number is required', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Mobile number is required',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
     if (selectedSourceId.value == null) {
-      Get.snackbar('Error', 'Source is required', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Source is required',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
     if (selectedStaffId.value == null) {
-      Get.snackbar('Error', 'Assigned staff is required', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Assigned staff is required',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
@@ -132,53 +151,71 @@ class AddLeadController extends GetxController {
       final isEdit = existingLead != null;
       final endpoint = isEdit ? ApiEndpoints.updateLead : ApiEndpoints.addLead;
 
-      final payload = {
+      final now = DateTime.now();
+      final dateStr = now.toIso8601String().split('T').first;
+      final timeStr =
+          '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+
+      final Map<String, dynamic> payload = {
         "name": nameController.text.trim(),
         "company": companyController.text.trim(),
         "description": descriptionController.text.trim(),
-        "country": 1, // Hardcoded per instruction
-        "zip": "",
-        "city": "",
-        "state": "",
+        "country": 1,
+        "zip": "null",
+        "city": "null",
+        "state": "null",
         "address": addressController.text.trim(),
         "assigned": selectedStaffId.value,
-        "status": isEdit ? existingLead!.statusId ?? 1 : 1, // New leads are Draft/New (1)
+        "status": isEdit ? existingLead!.statusId ?? 1 : 1,
         "source": selectedSourceId.value,
+        "lastcontact": "$dateStr $timeStr",
+        "dateassigned": dateStr,
         "email": emailController.text.trim(),
-        "website": "",
+        "website": "null",
         "phonenumber": mobileController.text.trim(),
-        "addedfrom": loginStaffId, // Needed for update
+        "addedfrom": loginStaffId,
       };
-
+      
       if (isEdit) {
         payload["id"] = existingLead!.id;
       } else {
         payload["client_id"] = 0;
         payload["lead_value"] = 0;
         payload["active"] = 1;
-        payload["dateassigned"] = DateTime.now().toIso8601String().split('T').first;
       }
+      
+      print("payload: " + payload.toString());
 
       final response = await _apiProvider.post(endpoint, payload);
 
-      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
         Get.back(); // close bottom sheet
         Get.snackbar(
-          'Success', 
-          isEdit ? 'Lead updated successfully' : 'Lead added successfully', 
-          snackPosition: SnackPosition.BOTTOM, 
-          backgroundColor: Colors.green, 
-          colorText: Colors.white
+          'Success',
+          isEdit ? 'Lead updated successfully' : 'Lead added successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
         );
         // Refresh list
         if (Get.isRegistered<LeadsController>()) {
           Get.find<LeadsController>().fetchLeads();
         }
       } else {
-        Get.snackbar('Error', 'Failed to save lead', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          'Failed to save lead',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save lead', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Failed to save lead',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading.value = false;
     }
