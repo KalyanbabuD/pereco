@@ -35,7 +35,7 @@ class SplashView extends GetView<SplashController> {
                   );
                 },
                 child: Image.asset(
-                  'assets/images/logo.png',
+                  'assets/images/pocketbiz.png',
                   width: 320, // Increased size significantly
                   fit: BoxFit.contain,
                 ),

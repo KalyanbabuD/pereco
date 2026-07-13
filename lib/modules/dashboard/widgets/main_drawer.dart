@@ -16,28 +16,10 @@ class MainDrawer extends GetView<DashboardController> {
           Container(
             padding: const EdgeInsets.only(top: 90, bottom: 45, left: 16, right: 16),
             color: AppColors.cardDarkBlue, // Dark blue background
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/images/logo.png',
-                  height: 36,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(width: 6),
-                const Padding(
-                  padding: EdgeInsets.only(top: 2.0),
-                  child: Text(
-                    'CRM',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primaryOrange,
-                    ),
-                  ),
-                ),
-              ],
+            child: Image.asset(
+              'assets/images/pocketbiz.png',
+              height: 48,
+              fit: BoxFit.contain,
             ),
           ),
           const Divider(height: 1, color: Color(0xFFEEEEEE)),

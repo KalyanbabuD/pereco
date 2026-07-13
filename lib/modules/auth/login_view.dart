@@ -24,24 +24,10 @@ class LoginView extends GetView<LoginController> {
               children: [
                 // Logo
                 Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        height: 48,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'CRM',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryRed,
-                        ),
-                      ),
-                    ],
+                  child: Image.asset(
+                    'assets/images/pocketbiz.png',
+                    height: 70,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(height: 50),

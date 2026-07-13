@@ -42,31 +42,10 @@ class DashboardView extends GetView<DashboardController> {
           icon: const Icon(Icons.menu, color: AppColors.cardDarkBlue),
           onPressed: controller.openDrawer,
         ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/images/logo.png',
-              height: 24,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(width: 4),
-            const Padding(
-              padding: EdgeInsets.only(
-                bottom: 5.0,
-              ), // Nudges the text up slightly
-              child: Text(
-                'CRM',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryRed,
-                ),
-              ),
-            ),
-          ],
+        title: Image.asset(
+          'assets/images/pocketbiz.png',
+          height: 36,
+          fit: BoxFit.contain,
         ),
         centerTitle: true,
         actions: [
