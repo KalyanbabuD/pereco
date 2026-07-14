@@ -50,16 +50,25 @@ class DashboardView extends GetView<DashboardController> {
         ),
         centerTitle: true,
         actions: [
-          Obx(() => IconButton(
-            icon: Badge(
-              isLabelVisible: controller.unreadNotificationCount.value > 0,
-              label: Text(controller.unreadNotificationCount.value.toString()),
-              child: const Icon(Icons.notifications, color: AppColors.cardDarkBlue),
+          Obx(
+            () => IconButton(
+              icon: Badge(
+                isLabelVisible: controller.unreadNotificationCount.value > 0,
+                label: Text(
+                  controller.unreadNotificationCount.value.toString(),
+                ),
+                child: const Icon(
+                  Icons.notifications,
+                  color: AppColors.cardDarkBlue,
+                ),
+              ),
+              onPressed: () {
+                Get.toNamed(
+                  Routes.NOTIFICATIONS,
+                )?.then((_) => controller.fetchUnreadNotificationCount());
+              },
             ),
-            onPressed: () {
-              Get.toNamed(Routes.NOTIFICATIONS)?.then((_) => controller.fetchUnreadNotificationCount());
-            },
-          )),
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: AppColors.cardDarkBlue),
             color: Colors.white,
@@ -179,8 +188,12 @@ class DashboardView extends GetView<DashboardController> {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 type: BottomNavigationBarType.fixed,
-                currentIndex: controller.currentIndex.value < 4 ? controller.currentIndex.value : 0,
-                selectedItemColor: controller.currentIndex.value < 4 ? Colors.white : Colors.white54,
+                currentIndex: controller.currentIndex.value < 4
+                    ? controller.currentIndex.value
+                    : 0,
+                selectedItemColor: controller.currentIndex.value < 4
+                    ? Colors.white
+                    : Colors.white54,
                 unselectedItemColor: Colors.white54,
                 selectedLabelStyle: const TextStyle(
                   fontWeight: FontWeight.bold,
@@ -225,226 +238,264 @@ class DashboardView extends GetView<DashboardController> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Obx(
-              () => Text(
-                'Hi ${controller.userName.value.isNotEmpty ? controller.userName.value : "User"}! 👋',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              "Here's what's happening with your business today.",
-              style: TextStyle(fontSize: 14, color: AppColors.greyText),
-            ),
-            const SizedBox(height: 20),
-
-            // Stats Cards
-            Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final data = controller.dashboardData.value;
-              return Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: AppColors.cardDarkBlue,
-                  borderRadius: BorderRadius.circular(16.0),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            '${data?.totalCustomers ?? 0}',
-                            'Customers',
-                            Icons.people,
-                            AppColors.statCustomers,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildStatCard(
-                            '${data?.totalLeads ?? 0}',
-                            'Leads',
-                            Icons.headset_mic,
-                            AppColors.statLeads,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            '${data?.totalTodos ?? 0}',
-                            'Todos',
-                            Icons.forum,
-                            AppColors.statFollowups,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildStatCard(
-                            '${data?.totalReminders ?? 0}',
-                            'Reminders',
-                            Icons.notifications,
-                            AppColors.statReminders,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }),
-            const SizedBox(height: 24),
-
-            // Quick Actions
-            const Text(
-              'Quick Actions',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildActionIcon('Customers', Icons.people, onTap: () => controller.changeTabIndex(1)),
-                _buildActionIcon('Leads', Icons.headset_mic, onTap: () => controller.changeTabIndex(2)),
-                _buildActionIcon('Proposal', Icons.edit_document, onTap: () { 
-                  controller.changeTabIndex(4); 
-                  if (Get.isRegistered<ProposalController>()) {
-                    Get.find<ProposalController>().fetchProposals();
-                  }
-                }),
-                _buildActionIcon('Follow-ups', Icons.event_available, onTap: () {
-                  controller.changeTabIndex(5);
-                  if (Get.isRegistered<FollowupsController>()) {
-                    Get.find<FollowupsController>().fetchFollowups();
-                  }
-                }),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Reports
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Reports',
-                  style: TextStyle(
-                    fontSize: 16,
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Obx(
+                () => Text(
+                  'Hi ${controller.userName.value.isNotEmpty ? controller.userName.value : "User"}! 👋',
+                  style: const TextStyle(
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textDark,
                   ),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'View All',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildActionIcon('Customers', Icons.people, onTap: () {}),
-                _buildActionIcon('Leads', Icons.phone_in_talk, onTap: () {}),
-                _buildActionIcon('Customer Conversion', Icons.how_to_reg, onTap: () {}),
-                _buildActionIcon('Follow-ups', Icons.event_available, onTap: () {}),
-              ],
-            ),
-            const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                "Here's what's happening with your business today.",
+                style: TextStyle(fontSize: 14, color: AppColors.greyText),
+              ),
+              const SizedBox(height: 20),
 
-            // Recent Leads
-            Obx(() {
-              final recentLeads =
-                  controller.dashboardData.value?.recentLeads ?? [];
-              final rows = recentLeads.map((lead) {
-                return [
-                  lead.company?.isNotEmpty == true ? lead.company! : 'N/A',
-                  lead.name ?? 'Unknown',
-                ];
-              }).toList();
-
-              return _buildListCard(
-                title: 'Recent Leads',
-                headers: ['Organization', 'Name'],
-                rows: rows.isEmpty
-                    ? [
-                        ['No leads', '-'],
-                      ]
-                    : rows,
-                onViewAll: () => controller.changeTabIndex(2),
-              );
-            }),
-            const SizedBox(height: 24),
-
-            // Recent Customers
-            Obx(() {
-              final recentCustomers =
-                  controller.dashboardData.value?.recentCustomers ?? [];
-              final rows = recentCustomers.map((customer) {
-                String name = customer.company?.isNotEmpty == true
-                    ? customer.company!
-                    : (customer.contactName ?? 'Unknown');
-
-                // Truncate long names slightly to fit like the web view
-                if (name.length > 15) {
-                  name = '${name.substring(0, 15)}...';
+              // Stats Cards
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
                 }
+                final data = controller.dashboardData.value;
+                return Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardDarkBlue,
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              '${data?.totalCustomers ?? 0}',
+                              'Customers',
+                              Icons.people,
+                              AppColors.statCustomers,
+                              onTap: () => controller.changeTabIndex(1),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildStatCard(
+                              '${data?.totalLeads ?? 0}',
+                              'Leads',
+                              Icons.headset_mic,
+                              AppColors.statLeads,
+                              onTap: () => controller.changeTabIndex(2),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              '${data?.totalTodos ?? 0}',
+                              'Todos',
+                              Icons.forum,
+                              AppColors.statFollowups,
+                              onTap: () => controller.changeTabIndex(3),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildStatCard(
+                              '${data?.totalReminders ?? 0}',
+                              'Reminders',
+                              Icons.notifications,
+                              AppColors.statReminders,
+                              onTap: () {
+                                controller.changeTabIndex(5);
+                                if (Get.isRegistered<FollowupsController>()) {
+                                  Get.find<FollowupsController>().fetchFollowups();
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 24),
 
-                return [name, customer.city ?? 'N/A'];
-              }).toList();
+              // Quick Actions
+              const Text(
+                'Quick Actions',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildActionIcon(
+                    'Customers',
+                    Icons.people,
+                    onTap: () => controller.changeTabIndex(1),
+                  ),
+                  _buildActionIcon(
+                    'Leads',
+                    Icons.headset_mic,
+                    onTap: () => controller.changeTabIndex(2),
+                  ),
+                  _buildActionIcon(
+                    'Proposal',
+                    Icons.edit_document,
+                    onTap: () {
+                      controller.changeTabIndex(4);
+                      if (Get.isRegistered<ProposalController>()) {
+                        Get.find<ProposalController>().fetchProposals();
+                      }
+                    },
+                  ),
+                  _buildActionIcon(
+                    'Follow-ups',
+                    Icons.event_available,
+                    onTap: () {
+                      controller.changeTabIndex(5);
+                      if (Get.isRegistered<FollowupsController>()) {
+                        Get.find<FollowupsController>().fetchFollowups();
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-              return _buildListCard(
-                title: 'Recent Customers',
-                headers: ['Name', 'City'],
-                rows: rows.isEmpty
-                    ? [
-                        ['No customers', '-'],
-                      ]
-                    : rows,
-                onViewAll: () => controller.changeTabIndex(1),
-              );
-            }),
-            const SizedBox(height: 20),
-          ],
+              // Reports
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Reports',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  // TextButton(
+                  //   onPressed: () {},
+                  //   child: const Text(
+                  //     'View All',
+                  //     style: TextStyle(color: Colors.blue),
+                  //   ),
+                  // ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildActionIcon('Customers', Icons.people, onTap: () {}),
+                  _buildActionIcon('Leads', Icons.phone_in_talk, onTap: () {}),
+                  _buildActionIcon(
+                    'Customer Conversion',
+                    Icons.how_to_reg,
+                    onTap: () {},
+                  ),
+                  _buildActionIcon(
+                    'Follow-ups',
+                    Icons.event_available,
+                    onTap: () {},
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Recent Leads
+              Obx(() {
+                final recentLeads =
+                    controller.dashboardData.value?.recentLeads ?? [];
+                final rows = recentLeads.map((lead) {
+                  return [
+                    lead.company?.isNotEmpty == true ? lead.company! : 'N/A',
+                    lead.name ?? 'Unknown',
+                  ];
+                }).toList();
+
+                return _buildListCard(
+                  title: 'Recent Leads',
+                  icon: Icons.headset_mic,
+                  headers: ['Organization', 'Name'],
+                  rows: rows.isEmpty
+                      ? [
+                          ['No leads', '-'],
+                        ]
+                      : rows,
+                  onViewAll: () => controller.changeTabIndex(2),
+                );
+              }),
+              const SizedBox(height: 24),
+
+              // Recent Customers
+              Obx(() {
+                final recentCustomers =
+                    controller.dashboardData.value?.recentCustomers ?? [];
+                final rows = recentCustomers.map((customer) {
+                  String name = customer.company?.isNotEmpty == true
+                      ? customer.company!
+                      : (customer.contactName ?? 'Unknown');
+
+                  // Truncate long names slightly to fit like the web view
+                  if (name.length > 15) {
+                    name = '${name.substring(0, 15)}...';
+                  }
+
+                  return [name, customer.city ?? 'N/A'];
+                }).toList();
+
+                return _buildListCard(
+                  title: 'Recent Customers',
+                  icon: Icons.people,
+                  headers: ['Name', 'City'],
+                  rows: rows.isEmpty
+                      ? [
+                          ['No customers', '-'],
+                        ]
+                      : rows,
+                  onViewAll: () => controller.changeTabIndex(1),
+                );
+              }),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildStatCard(
     String value,
     String title,
     IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.cardLightBlue,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    Color color, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: AppColors.cardLightBlue,
+          borderRadius: BorderRadius.circular(12),
+        ),
       child: Row(
         children: [
           Container(
@@ -475,7 +526,7 @@ class DashboardView extends GetView<DashboardController> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildActionIcon(String title, IconData icon, {VoidCallback? onTap}) {
@@ -489,23 +540,24 @@ class DashboardView extends GetView<DashboardController> {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           width: 78,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          height: 105,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, color: AppColors.cardDarkBlue, size: 28),
               const SizedBox(height: 12),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 10, // slightly smaller to fit better
-                    color: AppColors.greyText,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 10, // slightly smaller to fit better
+                  color: AppColors.greyText,
+                  fontWeight: FontWeight.w600,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
@@ -515,6 +567,7 @@ class DashboardView extends GetView<DashboardController> {
 
   Widget _buildListCard({
     required String title,
+    IconData? icon,
     required List<String> headers,
     required List<List<String>> rows,
     bool isFollowup = false,
@@ -542,21 +595,29 @@ class DashboardView extends GetView<DashboardController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.cardDarkBlue,
-                  ),
+                Row(
+                  children: [
+                    if (icon != null) ...[
+                      Icon(icon, color: AppColors.cardDarkBlue, size: 20),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.cardDarkBlue,
+                      ),
+                    ),
+                  ],
                 ),
                 if (onViewAll != null)
                   TextButton(
                     onPressed: onViewAll,
                     child: const Row(
                       children: [
-                        Text('View All', style: TextStyle(color: Colors.grey)),
-                        Icon(Icons.arrow_forward, color: Colors.grey, size: 16),
+                        Text('View All', style: TextStyle(color: Colors.blue)),
+                        Icon(Icons.arrow_forward, color: Colors.blue, size: 16),
                       ],
                     ),
                   ),
@@ -571,10 +632,13 @@ class DashboardView extends GetView<DashboardController> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: headers
+                      .asMap()
+                      .entries
                       .map(
-                        (h) => Expanded(
+                        (entry) => Expanded(
+                          flex: entry.key == 0 ? 6 : 4,
                           child: Text(
-                            h,
+                            entry.value,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.textDark,
@@ -590,11 +654,12 @@ class DashboardView extends GetView<DashboardController> {
                     padding: const EdgeInsets.only(bottom: 12.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: row.map((cell) {
-                        bool isStatus = isFollowup && cell == 'Pending';
+                      children: row.asMap().entries.map((entry) {
+                        bool isStatus = isFollowup && entry.value == 'Pending';
                         return Expanded(
+                          flex: entry.key == 0 ? 6 : 4,
                           child: Text(
-                            cell,
+                            entry.value,
                             style: TextStyle(
                               color: isStatus
                                   ? Colors.orange

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'notifications_controller.dart';
 import '../../core/app_colors.dart';
+import '../../core/widgets/pagination_control.dart';
 import '../../data/models/notification_model.dart';
 import '../dashboard/dashboard_controller.dart';
 import '../../routes/app_routes.dart';
@@ -194,22 +195,45 @@ class NotificationsView extends GetView<NotificationsController> {
         return const Center(child: CircularProgressIndicator());
       }
 
-      final notifications = isReceived
-          ? controller.filteredReceivedNotifications
-          : controller.filteredSentNotifications;
+      final paginatedNotifications = isReceived
+          ? controller.paginatedReceivedNotifications
+          : controller.paginatedSentNotifications;
 
-      if (notifications.isEmpty) {
+      if (paginatedNotifications.isEmpty) {
         return const Center(child: Text("No notifications found"));
       }
 
       return RefreshIndicator(
         onRefresh: controller.fetchNotifications,
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: notifications.length,
-          itemBuilder: (context, index) {
-            return _buildNotificationCard(notifications[index], isReceived);
-          },
+        child: SingleChildScrollView(
+          controller: isReceived
+              ? controller.scrollControllerReceived
+              : controller.scrollControllerSent,
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: paginatedNotifications.length,
+                itemBuilder: (context, index) {
+                  return _buildNotificationCard(paginatedNotifications[index], isReceived);
+                },
+              ),
+              Obx(() => PaginationControl(
+                    currentPage: isReceived
+                        ? controller.currentPageReceived.value
+                        : controller.currentPageSent.value,
+                    totalPages: isReceived
+                        ? controller.totalPagesReceived
+                        : controller.totalPagesSent,
+                    onPageChanged: isReceived
+                        ? controller.goToPageReceived
+                        : controller.goToPageSent,
+                  )),
+            ],
+          ),
         ),
       );
     });

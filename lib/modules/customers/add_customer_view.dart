@@ -75,7 +75,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
-        color: Color(0xFFF4F6F8),
+        color: Colors.white,
         borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
       child: DefaultTabController(
@@ -202,7 +202,12 @@ class AddCustomerView extends GetView<AddCustomerController> {
                               onChanged: (val) => controller.sameAsBilling.value = val ?? false,
                               activeColor: Colors.blue,
                             ),
-                            const Text('Shipping address is same as Billing address', style: TextStyle(color: Colors.red)),
+                            const Expanded(
+                              child: Text(
+                                'Shipping address is same as Billing address',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
                           ],
                         )),
                         const SizedBox(height: 24),
@@ -272,7 +277,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.cardDarkBlue,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),
                                 child: const Text('Next', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -288,7 +293,7 @@ class AddCustomerView extends GetView<AddCustomerController> {
                                 onPressed: controller.isLoading.value ? null : controller.submitCustomer,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.cardDarkBlue,
-                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),
                                 child: controller.isLoading.value

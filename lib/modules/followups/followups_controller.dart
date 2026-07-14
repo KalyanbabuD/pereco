@@ -53,10 +53,48 @@ class FollowupsController extends GetxController {
   void onClose() {
     searchController.dispose();
     filterSearchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredFollowups.length / itemsPerPage).ceil();
+
+  List<Reminder> get paginatedFollowups {
+    if (filteredFollowups.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredFollowups.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredFollowups.sublist(
+        startIndex,
+        endIndex > filteredFollowups.length ? filteredFollowups.length : endIndex);
+  }
+
+  void nextPage() {
+    if (currentPage.value < totalPages) currentPage.value++;
+  }
+
+  void previousPage() {
+    if (currentPage.value > 1) currentPage.value--;
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void searchFollowups(String query) {
+    currentPage.value = 1;
     if (query.isEmpty) {
       filteredFollowups.value = followups;
     } else {
@@ -76,6 +114,7 @@ class FollowupsController extends GetxController {
 
   Future<void> fetchFollowups() async {
     try {
+      currentPage.value = 1;
       isLoading.value = true;
       
       String url = '${ApiEndpoints.getReminders}?staffid=0';

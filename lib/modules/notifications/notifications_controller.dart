@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
 import '../../core/network/api_provider.dart';
 import '../../core/network/api_endpoints.dart';
 import '../../data/models/notification_model.dart';
@@ -16,6 +17,67 @@ class NotificationsController extends GetxController {
   final sentNotifications = <NotificationItem>[].obs;
 
   final searchQuery = ''.obs;
+
+  // Pagination
+  final scrollControllerReceived = ScrollController();
+  final scrollControllerSent = ScrollController();
+  final currentPageReceived = 1.obs;
+  final currentPageSent = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPagesReceived => (filteredReceivedNotifications.length / itemsPerPage).ceil();
+  int get totalPagesSent => (filteredSentNotifications.length / itemsPerPage).ceil();
+
+  List<NotificationItem> get paginatedReceivedNotifications {
+    final list = filteredReceivedNotifications;
+    if (list.isEmpty) return [];
+    final startIndex = (currentPageReceived.value - 1) * itemsPerPage;
+    if (startIndex >= list.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return list.sublist(
+        startIndex,
+        endIndex > list.length ? list.length : endIndex);
+  }
+
+  List<NotificationItem> get paginatedSentNotifications {
+    final list = filteredSentNotifications;
+    if (list.isEmpty) return [];
+    final startIndex = (currentPageSent.value - 1) * itemsPerPage;
+    if (startIndex >= list.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return list.sublist(
+        startIndex,
+        endIndex > list.length ? list.length : endIndex);
+  }
+
+  void goToPageReceived(int page) {
+    currentPageReceived.value = page;
+    if (scrollControllerReceived.hasClients) {
+      scrollControllerReceived.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void goToPageSent(int page) {
+    currentPageSent.value = page;
+    if (scrollControllerSent.hasClients) {
+      scrollControllerSent.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  void onClose() {
+    scrollControllerReceived.dispose();
+    scrollControllerSent.dispose();
+    super.onClose();
+  }
 
   @override
   void onInit() {
@@ -58,6 +120,8 @@ class NotificationsController extends GetxController {
 
   void setSearchQuery(String query) {
     searchQuery.value = query;
+    currentPageReceived.value = 1;
+    currentPageSent.value = 1;
   }
 
   List<NotificationItem> get filteredReceivedNotifications {

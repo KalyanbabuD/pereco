@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../core/app_colors.dart';
+import '../../core/widgets/pagination_control.dart';
 import '../../data/models/todo_model.dart';
 import 'todo_controller.dart';
 
@@ -369,6 +370,7 @@ class TodoView extends GetView<TodoController> {
                     controller.clearSearch();
                   },
                   child: SingleChildScrollView(
+                    controller: controller.scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.only(bottom: 24),
                     child: LayoutBuilder(
@@ -382,114 +384,123 @@ class TodoView extends GetView<TodoController> {
 
                       final double itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 16) / crossAxisCount;
 
-                      return Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        children: List.generate(controller.filteredTodos.length, (index) {
-                          final todo = controller.filteredTodos[index];
-                          final isFinished = todo.finished == 1;
+                      return Column(
+                        children: [
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: List.generate(controller.paginatedTodos.length, (index) {
+                              final todo = controller.paginatedTodos[index];
+                              final isFinished = todo.finished == 1;
 
-                          return SizedBox(
-                            width: itemWidth,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade200),
-                              ),
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                              return SizedBox(
+                                width: itemWidth,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade200),
+                                  ),
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // Checkbox
-                                      GestureDetector(
-                                        onTap: () => _showStatusConfirmDialog(context, todo, isFinished),
-                                        child: Container(
-                                          width: 24,
-                                          height: 24,
-                                          decoration: BoxDecoration(
-                                            color: isFinished ? const Color(0xFFF39C12) : Colors.transparent, // Orange when finished
-                                            border: Border.all(color: isFinished ? const Color(0xFFF39C12) : Colors.grey.shade300),
-                                            borderRadius: BorderRadius.circular(4),
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          // Checkbox
+                                          GestureDetector(
+                                            onTap: () => _showStatusConfirmDialog(context, todo, isFinished),
+                                            child: Container(
+                                              width: 24,
+                                              height: 24,
+                                              decoration: BoxDecoration(
+                                                color: isFinished ? const Color(0xFFF39C12) : Colors.transparent, // Orange when finished
+                                                border: Border.all(color: isFinished ? const Color(0xFFF39C12) : Colors.grey.shade300),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: isFinished
+                                                  ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                                  : null,
+                                            ),
                                           ),
-                                          child: isFinished
-                                              ? const Icon(Icons.check, size: 16, color: Colors.white)
-                                              : null,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      // Description
-                                      Expanded(
-                                        child: Text(
-                                          todo.description ?? '',
-                                          style: TextStyle(
-                                            color: isFinished ? Colors.grey : AppColors.cardDarkBlue,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            decoration: isFinished ? TextDecoration.lineThrough : null,
+                                          const SizedBox(width: 12),
+                                          // Description
+                                          Expanded(
+                                            child: Text(
+                                              todo.description ?? '',
+                                              style: TextStyle(
+                                                color: isFinished ? Colors.grey : AppColors.cardDarkBlue,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
+                                                decoration: isFinished ? TextDecoration.lineThrough : null,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      // Actions
-                                      GestureDetector(
-                                        onTap: () => _showAddEditBottomSheet(context, todo: todo),
-                                        child: const Icon(Icons.edit_square, color: AppColors.cardDarkBlue, size: 18),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      GestureDetector(
-                                        onTap: () => _showDeleteDialog(context, todo.todoid!),
-                                        child: const Icon(Icons.delete, color: AppColors.primaryRed, size: 18),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // Footer
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.person, size: 14, color: AppColors.cardDarkBlue),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          todo.staffName ?? 'N/A',
-                                          style: const TextStyle(color: Colors.grey, fontSize: 12),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const Icon(Icons.calendar_month, size: 14, color: AppColors.cardDarkBlue),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        _formatDate(todo.dateadded),
-                                        style: const TextStyle(color: Colors.grey, fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                  if (isFinished) ...[
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.check_circle, size: 14, color: Colors.green),
-                                        const SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            'Completed on ${_formatDate(todo.datefinished)}',
-                                            style: const TextStyle(color: Colors.green, fontSize: 12),
-                                            overflow: TextOverflow.ellipsis,
+                                          const SizedBox(width: 8),
+                                          // Actions
+                                          GestureDetector(
+                                            onTap: () => _showAddEditBottomSheet(context, todo: todo),
+                                            child: const Icon(Icons.edit_square, color: AppColors.cardDarkBlue, size: 18),
                                           ),
+                                          const SizedBox(width: 12),
+                                          GestureDetector(
+                                            onTap: () => _showDeleteDialog(context, todo.todoid!),
+                                            child: const Icon(Icons.delete, color: AppColors.primaryRed, size: 18),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Footer
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.person, size: 14, color: AppColors.cardDarkBlue),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              todo.staffName ?? 'N/A',
+                                              style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const Icon(Icons.calendar_month, size: 14, color: AppColors.cardDarkBlue),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            _formatDate(todo.dateadded),
+                                            style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                          ),
+                                        ],
+                                      ),
+                                      if (isFinished) ...[
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.check_circle, size: 14, color: Colors.green),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                'Completed on ${_formatDate(todo.datefinished)}',
+                                                style: const TextStyle(color: Colors.green, fontSize: 12),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                          Obx(() => PaginationControl(
+                                currentPage: controller.currentPage.value,
+                                totalPages: controller.totalPages,
+                                onPageChanged: controller.goToPage,
+                              )),
+                        ],
                       );
                     },
                   ),

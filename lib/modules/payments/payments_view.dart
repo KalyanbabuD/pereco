@@ -4,6 +4,7 @@ import '../../core/app_colors.dart';
 import 'payments_controller.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
+import '../../core/widgets/pagination_control.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 class PaymentsView extends GetView<PaymentsController> {
@@ -273,12 +274,15 @@ class PaymentsView extends GetView<PaymentsController> {
                   return RefreshIndicator(
                     onRefresh: controller.fetchPayments,
                     child: SingleChildScrollView(
+                      controller: controller.scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.only(bottom: 24),
-                      child: Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        children: controller.filteredPayments.map((payment) {
+                      child: Column(
+                        children: [
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: controller.paginatedPayments.map((payment) {
                           // Calculate amounts
                           double invoiceAmt =
                               double.tryParse(payment.invoiceAmount ?? '0') ??
@@ -309,327 +313,250 @@ class PaymentsView extends GetView<PaymentsController> {
                                 ),
                               ],
                             ),
-                            child: Column(
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Top Row (Info)
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Left Section
-                                    Expanded(
-                                      flex: 5,
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: const BoxDecoration(
-                                              color: AppColors.cardDarkBlue,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Center(
-                                              child: Text(
-                                                'P',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'PAY-${payment.id ?? ''}',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color:
-                                                        AppColors.cardDarkBlue,
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  '${payment.invoicePrefix ?? ''}${payment.invoiceNumber ?? ''}',
-                                                  style: const TextStyle(
-                                                    color: Colors.black87,
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.person,
-                                                      color: Colors.grey,
-                                                      size: 12,
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Expanded(
-                                                      child: Text(
-                                                        payment.clientName ??
-                                                            '-',
-                                                        style: const TextStyle(
-                                                          color: Colors.grey,
-                                                          fontSize: 11,
-                                                        ),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    // Middle Section
-                                    Expanded(
-                                      flex: 4,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            _formatCurrency(payment.amount),
-                                            style: const TextStyle(
-                                              color: Colors.green,
+                                // Left Section (Avatar + Info)
+                                Expanded(
+                                  flex: 4,
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 36,
+                                        height: 36,
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.cardDarkBlue,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Center(
+                                          child: Text(
+                                            'P',
+                                            style: TextStyle(
+                                              color: Colors.white,
                                               fontWeight: FontWeight.bold,
                                               fontSize: 16,
                                             ),
                                           ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.calendar_month,
-                                                color: Colors.black87,
-                                                size: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'PAY-${payment.id ?? ''}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.cardDarkBlue,
+                                                fontSize: 13,
                                               ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text(
-                                                  _formatDate(payment.date),
-                                                  style: const TextStyle(
-                                                    color: Colors.black87,
-                                                    fontSize: 12,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${payment.invoicePrefix ?? ''}${payment.invoiceNumber ?? ''}',
+                                              style: const TextStyle(
+                                                color: Colors.orange,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.person, color: Colors.grey, size: 12),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: Text(
+                                                    payment.clientName ?? '-',
+                                                    style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.credit_card,
-                                                color: Colors.black87,
-                                                size: 14,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text(
-                                                  payment.paymentModeName ??
-                                                      payment.paymentmethod ??
-                                                      '-',
-                                                  style: const TextStyle(
-                                                    color: Colors.black87,
-                                                    fontSize: 12,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                // Middle Section (Amount, Date, Mode)
+                                Expanded(
+                                  flex: 3,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _formatCurrency(payment.amount),
+                                        style: const TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.calendar_month, color: Colors.black87, size: 12),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              _formatDate(payment.date),
+                                              style: const TextStyle(color: Colors.black87, fontSize: 11),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    // Popup Menu
-                                    PopupMenuButton<String>(
-                                      icon: const Icon(
-                                        Icons.more_vert,
-                                        color: AppColors.cardDarkBlue,
-                                        size: 20,
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.credit_card, color: Colors.black87, size: 12),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              payment.paymentModeName ?? payment.paymentmethod ?? '-',
+                                              style: const TextStyle(color: Colors.black87, fontSize: 11),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      color: Colors.white,
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      onSelected: (value) {
-                                        if (value == 'Make As Payment') {
-                                          // TODO
-                                        } else if (value == 'Reminder') {
-                                          // TODO
-                                        }
-                                      },
-                                      itemBuilder: (BuildContext context) =>
-                                          <PopupMenuEntry<String>>[
-                                            const PopupMenuItem<String>(
-                                              value: 'Make As Payment',
-                                              child: Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.credit_card,
-                                                    color: Colors.grey,
-                                                    size: 20,
-                                                  ),
-                                                  SizedBox(width: 8),
-                                                  Text(
-                                                    'Make As Payment',
-                                                    style: TextStyle(
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                // Right Section (Progress Bars)
+                                Expanded(
+                                  flex: 4,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Invoice', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                                          const SizedBox(width: 2),
+                                          Flexible(
+                                            child: Text(
+                                              _formatCurrency(payment.invoiceAmount),
+                                              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 11),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.right,
                                             ),
-                                            const PopupMenuItem<String>(
-                                              value: 'Reminder',
-                                              child: Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.notifications_none,
-                                                    color: Colors.grey,
-                                                    size: 20,
-                                                  ),
-                                                  SizedBox(width: 8),
-                                                  Text(
-                                                    'Reminder',
-                                                    style: TextStyle(
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Paid', style: TextStyle(color: Colors.green, fontSize: 10)),
+                                          const SizedBox(width: 2),
+                                          Flexible(
+                                            child: Text(
+                                              _formatCurrency(payment.amount),
+                                              style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 11),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.right,
                                             ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      LinearProgressIndicator(
+                                        value: paidPercent,
+                                        backgroundColor: Colors.grey.shade300,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          (invoiceAmt > 0 && paidAmt >= invoiceAmt) ? Colors.green : const Color(0xFFE67E22),
+                                        ),
+                                        minHeight: 4,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Due', style: TextStyle(color: Color(0xFFE67E22), fontSize: 10)),
+                                          const SizedBox(width: 2),
+                                          Flexible(
+                                            child: Text(
+                                              _formatCurrency(dueAmt.toString()),
+                                              style: const TextStyle(color: Color(0xFFE67E22), fontWeight: FontWeight.bold, fontSize: 11),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.right,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Popup Menu
+                                SizedBox(
+                                  width: 24,
+                                  child: PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert, color: AppColors.cardDarkBlue, size: 20),
+                                    color: Colors.white,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onSelected: (value) {
+                                      if (value == 'Make As Payment') {
+                                        // TODO
+                                      } else if (value == 'Reminder') {
+                                        // TODO
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                      const PopupMenuItem<String>(
+                                        value: 'Make As Payment',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.credit_card, color: Colors.grey, size: 20),
+                                            SizedBox(width: 8),
+                                            Text('Make As Payment', style: TextStyle(color: Colors.grey)),
                                           ],
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 16),
-                                Container(
-                                  height: 1,
-                                  color: Colors.grey.shade200,
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Bottom Section (Progress Bars)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text(
-                                          'Invoice',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 12,
-                                          ),
                                         ),
-                                        Text(
-                                          _formatCurrency(
-                                            payment.invoiceAmount,
-                                          ),
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
+                                      ),
+                                      const PopupMenuItem<String>(
+                                        value: 'Reminder',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.notifications_none, color: Colors.grey, size: 20),
+                                            SizedBox(width: 8),
+                                            Text('Reminder', style: TextStyle(color: Colors.grey)),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text(
-                                          'Paid',
-                                          style: TextStyle(
-                                            color: Colors.green,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        Text(
-                                          _formatCurrency(payment.amount),
-                                          style: const TextStyle(
-                                            color: Colors.green,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
-                                    LinearProgressIndicator(
-                                      value: paidPercent,
-                                      backgroundColor: Colors.grey.shade200,
-                                      valueColor:
-                                          const AlwaysStoppedAnimation<Color>(
-                                            Colors.green,
-                                          ),
-                                      minHeight: 6,
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text(
-                                          'Due',
-                                          style: TextStyle(
-                                            color: Color(0xFFE67E22),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        Text(
-                                          _formatCurrency(dueAmt.toString()),
-                                          style: const TextStyle(
-                                            color: Color(0xFFE67E22),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
-                                    LinearProgressIndicator(
-                                      value: duePercent,
-                                      backgroundColor: Colors.grey.shade200,
-                                      valueColor:
-                                          const AlwaysStoppedAnimation<Color>(
-                                            Color(0xFFE67E22),
-                                          ),
-                                      minHeight: 6,
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                  ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
                           );
-                        }).toList(),
+                          }).toList(),
+                          ),
+                          Obx(() => PaginationControl(
+                                currentPage: controller.currentPage.value,
+                                totalPages: controller.totalPages,
+                                onPageChanged: controller.goToPage,
+                              )),
+                        ],
                       ),
                     ),
                   );

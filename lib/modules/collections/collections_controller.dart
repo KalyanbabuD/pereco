@@ -15,6 +15,34 @@ class CollectionsController extends GetxController {
 
   TextEditingController searchController = TextEditingController();
 
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredCreditNotes.length / itemsPerPage).ceil();
+
+  List<CreditNote> get paginatedCreditNotes {
+    if (filteredCreditNotes.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredCreditNotes.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredCreditNotes.sublist(
+        startIndex,
+        endIndex > filteredCreditNotes.length ? filteredCreditNotes.length : endIndex);
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   // Add form controllers
   TextEditingController amountController = TextEditingController();
   TextEditingController dateController = TextEditingController();
@@ -91,6 +119,7 @@ class CollectionsController extends GetxController {
   }
 
   void searchCreditNotes(String query) {
+    currentPage.value = 1;
     if (query.isEmpty) {
       filteredCreditNotes.value = creditNotes;
     } else {

@@ -21,6 +21,34 @@ class ExpensesController extends GetxController {
   final taxes = <DropdownItem>[].obs;
   final paymentModes = <DropdownItem>[].obs;
 
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredExpenses.length / itemsPerPage).ceil();
+
+  List<Expense> get paginatedExpenses {
+    if (filteredExpenses.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredExpenses.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredExpenses.sublist(
+        startIndex,
+        endIndex > filteredExpenses.length ? filteredExpenses.length : endIndex);
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -31,10 +59,12 @@ class ExpensesController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
   void searchExpenses(String query) {
+    currentPage.value = 1;
     if (query.isEmpty) {
       filteredExpenses.value = expenses;
     } else {
@@ -54,6 +84,7 @@ class ExpensesController extends GetxController {
 
   Future<void> fetchExpenses() async {
     try {
+      currentPage.value = 1;
       isLoading.value = true;
 
       final response = await _apiProvider.get(ApiEndpoints.getExpenses);

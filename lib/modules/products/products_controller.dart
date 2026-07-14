@@ -15,6 +15,34 @@ class ProductsController extends GetxController {
   // Used for tracking expanded cards
   final expandedCards = <int, bool>{}.obs;
 
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredProducts.length / itemsPerPage).ceil();
+
+  List<Product> get paginatedProducts {
+    if (filteredProducts.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredProducts.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredProducts.sublist(
+        startIndex,
+        endIndex > filteredProducts.length ? filteredProducts.length : endIndex);
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -24,6 +52,7 @@ class ProductsController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
@@ -33,6 +62,7 @@ class ProductsController extends GetxController {
   }
 
   void searchProducts(String query) {
+    currentPage.value = 1;
     if (query.isEmpty) {
       filteredProducts.value = products;
     } else {
@@ -52,6 +82,7 @@ class ProductsController extends GetxController {
 
   Future<void> fetchProducts() async {
     try {
+      currentPage.value = 1;
       isLoading.value = true;
       final response = await _apiProvider.get(ApiEndpoints.getProducts);
 

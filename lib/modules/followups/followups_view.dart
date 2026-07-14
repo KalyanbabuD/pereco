@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/app_colors.dart';
 import '../../core/utils/date_utils.dart';
+import '../../core/widgets/pagination_control.dart';
 import 'followups_controller.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../data/models/reminder_model.dart';
@@ -260,6 +261,7 @@ class FollowupsView extends GetView<FollowupsController> {
                   return RefreshIndicator(
                     onRefresh: controller.fetchFollowups,
                     child: SingleChildScrollView(
+                      controller: controller.scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: SizedBox(
                         height: MediaQuery.of(context).size.height * 0.4,
@@ -280,89 +282,98 @@ class FollowupsView extends GetView<FollowupsController> {
 
                 return RefreshIndicator(
                   onRefresh: controller.fetchFollowups,
-                  child: GridView.builder(
+                  child: SingleChildScrollView(
+                    controller: controller.scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 400,
-                      mainAxisExtent: 84,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                  itemCount: controller.filteredFollowups.length,
-                  itemBuilder: (context, index) {
-                    final followup = controller.filteredFollowups[index];
-                    
-                    String formattedDate = '';
-                    if (followup.date != null && followup.date!.isNotEmpty) {
-                      try {
-                        DateTime dt = AppDateUtils.parseApiDate(followup.date!) ?? DateTime.parse(followup.date!).toLocal();
-                        formattedDate = AppDateUtils.formatDateForUI(dt);
-                      } catch (e) {
-                        formattedDate = followup.date!;
-                      }
-                    }
+                    child: Column(
+                      children: [
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: controller.paginatedFollowups.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final followup = controller.paginatedFollowups[index];
+                            
+                            String formattedDate = '';
+                            if (followup.date != null && followup.date!.isNotEmpty) {
+                              try {
+                                DateTime dt = AppDateUtils.parseApiDate(followup.date!) ?? DateTime.parse(followup.date!).toLocal();
+                                formattedDate = AppDateUtils.formatDateForUI(dt);
+                              } catch (e) {
+                                formattedDate = followup.date!;
+                              }
+                            }
 
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade200),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.01),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(Icons.notifications, color: Colors.orange, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  followup.description ?? 'No Description',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 13),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.shade200),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.01),
+                                    blurRadius: 2,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              InkWell(
-                                onTap: () => _showAddEditBottomSheet(context, reminder: followup),
-                                child: const Icon(Icons.edit_outlined, color: AppColors.cardDarkBlue, size: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(Icons.notifications, color: Colors.orange, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          followup.description ?? 'No Description',
+                                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 13),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      InkWell(
+                                        onTap: () => _showAddEditBottomSheet(context, reminder: followup),
+                                        child: const Icon(Icons.edit_outlined, color: AppColors.cardDarkBlue, size: 20),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.person, color: Colors.grey, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${followup.firstname ?? ''} ${followup.lastname ?? ''}'.trim(),
+                                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      const Icon(Icons.calendar_today, color: Colors.grey, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        formattedDate,
+                                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                      ),
+                                    ],
+                                  )
+                                ],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              const Icon(Icons.person, color: Colors.grey, size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${followup.firstname ?? ''} ${followup.lastname ?? ''}'.trim(),
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                              const SizedBox(width: 16),
-                              const Icon(Icons.calendar_today, color: Colors.grey, size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                formattedDate,
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              );
+                            );
+                          },
+                        ),
+                        Obx(() => PaginationControl(
+                              currentPage: controller.currentPage.value,
+                              totalPages: controller.totalPages,
+                              onPageChanged: controller.goToPage,
+                            )),
+                      ],
+                    ),
+                  ),
+                );
             }),
           ),
           ],

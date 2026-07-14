@@ -14,9 +14,46 @@ class LeadsController extends GetxController {
   final isLoading = true.obs;
   final TextEditingController searchController = TextEditingController();
 
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredLeads.length / itemsPerPage).ceil();
+
+  List<Lead> get paginatedLeads {
+    if (filteredLeads.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredLeads.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredLeads.sublist(
+        startIndex,
+        endIndex > filteredLeads.length ? filteredLeads.length : endIndex);
+  }
+
+  void nextPage() {
+    if (currentPage.value < totalPages) currentPage.value++;
+  }
+
+  void previousPage() {
+    if (currentPage.value > 1) currentPage.value--;
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   void onClose() {
     searchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
@@ -27,6 +64,7 @@ class LeadsController extends GetxController {
   }
 
   void searchLeads(String query) {
+    currentPage.value = 1;
     if (query.isEmpty) {
       filteredLeads.value = leads;
     } else {
@@ -49,6 +87,7 @@ class LeadsController extends GetxController {
 
   Future<void> fetchLeads() async {
     try {
+      currentPage.value = 1;
       isLoading.value = true;
       final prefs = await SharedPreferences.getInstance();
       final staffId = prefs.getInt('staffid');

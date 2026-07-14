@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/app_colors.dart';
+import '../../core/widgets/pagination_control.dart';
 import 'collections_controller.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
@@ -208,30 +209,26 @@ class CollectionsView extends StatelessWidget {
                   return RefreshIndicator(
                     onRefresh: controller.fetchCreditNotes,
                     child: SingleChildScrollView(
+                      controller: controller.scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          int crossAxisCount = 1;
-                          if (constraints.maxWidth > 1200) {
-                            crossAxisCount = 3;
-                          } else if (constraints.maxWidth > 800) {
-                            crossAxisCount = 2;
-                          }
-
-                          final double itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 16) / crossAxisCount;
-
-                          return Wrap(
-                            spacing: 16,
-                            runSpacing: 16,
-                            children: List.generate(controller.filteredCreditNotes.length, (index) {
-                              final cn = controller.filteredCreditNotes[index];
-                              return SizedBox(
-                                width: itemWidth,
-                                child: _buildCreditNoteCard(context, cn, controller),
-                              );
-                            }),
-                          );
-                        },
+                      child: Column(
+                        children: [
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: controller.paginatedCreditNotes.length,
+                            separatorBuilder: (context, index) => const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final cn = controller.paginatedCreditNotes[index];
+                              return _buildCreditNoteCard(context, cn, controller);
+                            },
+                          ),
+                          Obx(() => PaginationControl(
+                                currentPage: controller.currentPage.value,
+                                totalPages: controller.totalPages,
+                                onPageChanged: controller.goToPage,
+                              )),
+                        ],
                       ),
                     ),
                   );

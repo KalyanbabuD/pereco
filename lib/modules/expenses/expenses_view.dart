@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../core/app_colors.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
+import '../../core/widgets/pagination_control.dart';
 import 'expenses_controller.dart';
 import 'add_expense_controller.dart';
 import 'add_expense_view.dart';
@@ -174,10 +175,15 @@ class ExpensesView extends GetView<ExpensesController> {
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
                 );
-                
+
                 if (result == true) {
-                  Get.snackbar('Success', 'Expense added successfully', 
-                      snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+                  Get.snackbar(
+                    'Success',
+                    'Expense added successfully',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.green,
+                    colorText: Colors.white,
+                  );
                   controller.fetchExpenses();
                 }
               },
@@ -241,14 +247,26 @@ class ExpensesView extends GetView<ExpensesController> {
                     return ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.3,
+                        ),
                         const Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                              Icon(
+                                Icons.inbox_outlined,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
                               SizedBox(height: 16),
-                              Text('No Data Found', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                              Text(
+                                'No Data Found',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 16,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -257,6 +275,7 @@ class ExpensesView extends GetView<ExpensesController> {
                   }
 
                   return SingleChildScrollView(
+                    controller: controller.scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -271,249 +290,309 @@ class ExpensesView extends GetView<ExpensesController> {
                             (constraints.maxWidth - (crossAxisCount - 1) * 16) /
                             crossAxisCount;
 
-                        return Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          children: List.generate(
-                            controller.filteredExpenses.length,
-                            (index) {
-                              final expense =
-                                  controller.filteredExpenses[index];
+                        return Column(
+                          children: [
+                            Wrap(
+                              spacing: 16,
+                              runSpacing: 16,
+                              children: List.generate(
+                                controller.paginatedExpenses.length,
+                                (index) {
+                                  final expense =
+                                      controller.paginatedExpenses[index];
 
-                              return SizedBox(
-                                width: itemWidth,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.grey.shade200,
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 20,
-                                            backgroundColor: Colors.blue
-                                                .withOpacity(0.1),
-                                            child: Text(
-                                              _getInitials(
-                                                expense.expenseName ?? '',
-                                              ),
-                                              style: const TextStyle(
-                                                color: AppColors.cardDarkBlue,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
+                                  return SizedBox(
+                                    width: itemWidth,
+                                    child: InkWell(
+                                      onTap: () {
+                                        Get.toNamed(
+                                          '/expense-details',
+                                          arguments: expense,
+                                        );
+                                      },
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: Colors.grey.shade200,
                                           ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
+                                        ),
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  expense.expenseName ?? '',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 14,
+                                                CircleAvatar(
+                                                  radius: 20,
+                                                  backgroundColor: Colors.blue
+                                                      .withOpacity(0.1),
+                                                  child: Center(
+                                                    child: Text(
+                                                      _getInitials(
+                                                        expense.expenseName ?? '',
+                                                      ),
+                                                      style: const TextStyle(
+                                                        color:
+                                                            AppColors.cardDarkBlue,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      expense.expenseName ?? '',
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 14,
+                                                        color: AppColors
+                                                            .cardDarkBlue,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      expense.expenseCategoryName ??
+                                                          '',
+                                                      style: const TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 12,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              PopupMenuButton<String>(
+                                                icon: const Icon(
+                                                  Icons.more_vert,
+                                                  color: AppColors.cardDarkBlue,
+                                                  size: 20,
+                                                ),
+                                                color: Colors.white,
+                                                onSelected: (value) async {
+                                                  if (value == 'view') {
+                                                    Get.toNamed(
+                                                      '/expense-details',
+                                                      arguments: expense,
+                                                    );
+                                                  } else if (value == 'edit') {
+                                                    final result =
+                                                        await Get.bottomSheet(
+                                                          GetBuilder<
+                                                            AddExpenseController
+                                                          >(
+                                                            init:
+                                                                AddExpenseController(
+                                                                  expense:
+                                                                      expense,
+                                                                ),
+                                                            builder: (_) =>
+                                                                const AddExpenseView(),
+                                                          ),
+                                                          isScrollControlled:
+                                                              true,
+                                                          backgroundColor:
+                                                              Colors
+                                                                  .transparent,
+                                                        );
+
+                                                    if (result == true) {
+                                                      Get.snackbar(
+                                                        'Success',
+                                                        'Expense updated successfully',
+                                                        snackPosition:
+                                                            SnackPosition
+                                                                .BOTTOM,
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                        colorText: Colors.white,
+                                                      );
+                                                      controller
+                                                          .fetchExpenses();
+                                                    }
+                                                  }
+                                                },
+                                                itemBuilder: (context) => [
+                                                  const PopupMenuItem(
+                                                    value: 'view',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.visibility,
+                                                          size: 20,
+                                                          color: AppColors
+                                                              .cardDarkBlue,
+                                                        ),
+                                                        SizedBox(width: 12),
+                                                        Text('View'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const PopupMenuItem(
+                                                    value: 'edit',
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.edit,
+                                                          size: 20,
+                                                          color: AppColors
+                                                              .cardDarkBlue,
+                                                        ),
+                                                        SizedBox(width: 12),
+                                                        Text('Edit'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.calendar_month,
+                                                    size: 14,
                                                     color:
                                                         AppColors.cardDarkBlue,
                                                   ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    _formatDate(expense.date),
+                                                    style: const TextStyle(
+                                                      color: Colors.black87,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Expanded(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.person,
+                                                      size: 14,
+                                                      color: AppColors
+                                                          .cardDarkBlue,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Flexible(
+                                                      child: Text(
+                                                        expense.clientName ??
+                                                            'N/A',
+                                                        style: const TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 12,
+                                                        ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  expense.expenseCategoryName ??
-                                                      '',
+                                              ),
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.currency_rupee,
+                                                    size: 14,
+                                                    color:
+                                                        AppColors.cardDarkBlue,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    expense.amount ?? '0.00',
+                                                    style: const TextStyle(
+                                                      color: Colors.black87,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Icon(
+                                                Icons.credit_card,
+                                                size: 14,
+                                                color: AppColors.cardDarkBlue,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                expense.paymentModeName ??
+                                                    expense.paymentmode ??
+                                                    'UPI',
+                                                style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              const Icon(
+                                                Icons.description,
+                                                size: 14,
+                                                color: AppColors.cardDarkBlue,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  (expense.note ?? '')
+                                                      .replaceAll('\n', ' '),
                                                   style: const TextStyle(
-                                                    color: Colors.grey,
+                                                    color: Colors.black87,
                                                     fontSize: 12,
                                                   ),
                                                   maxLines: 1,
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                 ),
-                                              ],
-                                            ),
-                                          ),
-                                          PopupMenuButton<String>(
-                                            icon: const Icon(
-                                              Icons.more_vert,
-                                              color: AppColors.cardDarkBlue,
-                                              size: 20,
-                                            ),
-                                            color: Colors.white,
-                                            onSelected: (value) async {
-                                              if (value == 'view') {
-                                                Get.toNamed('/expense-details', arguments: expense);
-                                              } else if (value == 'edit') {
-                                                final result = await Get.bottomSheet(
-                                                  GetBuilder<AddExpenseController>(
-                                                    init: AddExpenseController(expense: expense),
-                                                    builder: (_) => const AddExpenseView(),
-                                                  ),
-                                                  isScrollControlled: true,
-                                                  backgroundColor: Colors.transparent,
-                                                );
-                                                
-                                                if (result == true) {
-                                                  Get.snackbar('Success', 'Expense updated successfully', 
-                                                      snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
-                                                  controller.fetchExpenses();
-                                                }
-                                              }
-                                            },
-                                            itemBuilder: (context) => [
-                                              const PopupMenuItem(
-                                                value: 'view',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.visibility, size: 20, color: AppColors.cardDarkBlue),
-                                                    SizedBox(width: 12),
-                                                    Text('View'),
-                                                  ],
-                                                ),
-                                              ),
-                                              const PopupMenuItem(
-                                                value: 'edit',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.edit, size: 20, color: AppColors.cardDarkBlue),
-                                                    SizedBox(width: 12),
-                                                    Text('Edit'),
-                                                  ],
-                                                ),
                                               ),
                                             ],
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 16),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.calendar_month,
-                                                size: 14,
-                                                color: AppColors.cardDarkBlue,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                _formatDate(expense.date),
-                                                style: const TextStyle(
-                                                  color: Colors.black87,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Expanded(
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const Icon(
-                                                  Icons.person,
-                                                  size: 14,
-                                                  color: AppColors.cardDarkBlue,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Flexible(
-                                                  child: Text(
-                                                    expense.clientName ?? 'N/A',
-                                                    style: const TextStyle(
-                                                      color: Colors.black87,
-                                                      fontSize: 12,
-                                                    ),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.currency_rupee,
-                                                size: 14,
-                                                color: AppColors.cardDarkBlue,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                expense.amount ?? '0.00',
-                                                style: const TextStyle(
-                                                  color: Colors.black87,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Icon(
-                                            Icons.credit_card,
-                                            size: 14,
-                                            color: AppColors.cardDarkBlue,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            expense.paymentModeName ??
-                                                expense.paymentmode ??
-                                                'UPI',
-                                            style: const TextStyle(
-                                              color: Colors.black87,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          const Icon(
-                                            Icons.description,
-                                            size: 14,
-                                            color: AppColors.cardDarkBlue,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: Text(
-                                              (expense.note ?? '').replaceAll(
-                                                '\n',
-                                                ' ',
-                                              ),
-                                              style: const TextStyle(
-                                                color: Colors.black87,
-                                                fontSize: 12,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
+                                );
+                              },
+                              ),
+                            ),
+                            Obx(
+                              () => PaginationControl(
+                                currentPage: controller.currentPage.value,
+                                totalPages: controller.totalPages,
+                                onPageChanged: controller.goToPage,
+                              ),
+                            ),
+                          ],
                         );
                       },
                     ),

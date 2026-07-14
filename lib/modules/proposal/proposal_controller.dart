@@ -28,10 +28,48 @@ class ProposalController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredProposals.length / itemsPerPage).ceil();
+
+  List<Proposal> get paginatedProposals {
+    if (filteredProposals.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredProposals.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredProposals.sublist(
+        startIndex,
+        endIndex > filteredProposals.length ? filteredProposals.length : endIndex);
+  }
+
+  void nextPage() {
+    if (currentPage.value < totalPages) currentPage.value++;
+  }
+
+  void previousPage() {
+    if (currentPage.value > 1) currentPage.value--;
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void searchProposals(String query) {
+    currentPage.value = 1;
     if (query.isEmpty) {
       filteredProposals.value = proposals;
     } else {
@@ -52,6 +90,7 @@ class ProposalController extends GetxController {
 
   Future<void> fetchProposals() async {
     try {
+      currentPage.value = 1;
       isLoadingList.value = true;
       final response = await _apiProvider.get(ApiEndpoints.getProposals);
 

@@ -12,10 +12,48 @@ class CustomersController extends GetxController {
   final filteredCustomers = <Customer>[].obs;
   final isLoading = true.obs;
   final TextEditingController searchController = TextEditingController();
+  final currentFilter = ''.obs;
+
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredCustomers.length / itemsPerPage).ceil();
+
+  List<Customer> get paginatedCustomers {
+    if (filteredCustomers.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredCustomers.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredCustomers.sublist(
+        startIndex,
+        endIndex > filteredCustomers.length ? filteredCustomers.length : endIndex);
+  }
+
+  void nextPage() {
+    if (currentPage.value < totalPages) currentPage.value++;
+  }
+
+  void previousPage() {
+    if (currentPage.value > 1) currentPage.value--;
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   @override
   void onClose() {
     searchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
@@ -25,27 +63,49 @@ class CustomersController extends GetxController {
     fetchCustomers();
   }
 
+  void setFilter(String filter) {
+    currentFilter.value = filter;
+    _applyFilters();
+  }
+
   void searchCustomers(String query) {
-    if (query.isEmpty) {
-      filteredCustomers.value = customers;
-    } else {
-      final lowercaseQuery = query.toLowerCase();
-      filteredCustomers.value = customers.where((customer) {
-        return (customer.company?.toLowerCase().contains(lowercaseQuery) ?? false) ||
-            (customer.city?.toLowerCase().contains(lowercaseQuery) ?? false) ||
-            (customer.phonenumber?.toLowerCase().contains(lowercaseQuery) ?? false) ||
-            (customer.contactName?.toLowerCase().contains(lowercaseQuery) ?? false);
-      }).toList();
-    }
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    currentPage.value = 1;
+    final query = searchController.text.toLowerCase();
+    
+    filteredCustomers.value = customers.where((customer) {
+      // Status Filter
+      bool matchesStatus = true;
+      if (currentFilter.value == 'Active') {
+        matchesStatus = customer.active == 1 || customer.active == '1';
+      } else if (currentFilter.value == 'Inactive') {
+        matchesStatus = customer.active != 1 && customer.active != '1';
+      }
+      
+      // Search Filter
+      bool matchesSearch = true;
+      if (query.isNotEmpty) {
+        matchesSearch = (customer.company?.toLowerCase().contains(query) ?? false) ||
+            (customer.city?.toLowerCase().contains(query) ?? false) ||
+            (customer.phonenumber?.toLowerCase().contains(query) ?? false) ||
+            (customer.contactName?.toLowerCase().contains(query) ?? false);
+      }
+      
+      return matchesStatus && matchesSearch;
+    }).toList();
   }
 
   void clearSearch() {
     searchController.clear();
-    searchCustomers('');
+    _applyFilters();
   }
 
   Future<void> fetchCustomers() async {
     try {
+      currentPage.value = 1;
       isLoading.value = true;
 
       final response = await _apiProvider.get(ApiEndpoints.getCustomers);

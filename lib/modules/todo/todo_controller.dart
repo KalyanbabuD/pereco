@@ -23,6 +23,42 @@ class TodoController extends GetxController {
   final TextEditingController searchController = TextEditingController();
   final TextEditingController staffSearchController = TextEditingController();
 
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredTodos.length / itemsPerPage).ceil();
+
+  List<Todo> get paginatedTodos {
+    if (filteredTodos.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredTodos.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredTodos.sublist(
+        startIndex,
+        endIndex > filteredTodos.length ? filteredTodos.length : endIndex);
+  }
+
+  void nextPage() {
+    if (currentPage.value < totalPages) currentPage.value++;
+  }
+
+  void previousPage() {
+    if (currentPage.value > 1) currentPage.value--;
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -33,6 +69,7 @@ class TodoController extends GetxController {
   void onClose() {
     searchController.dispose();
     staffSearchController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
@@ -64,6 +101,7 @@ class TodoController extends GetxController {
 
   Future<void> fetchTodos() async {
     try {
+      currentPage.value = 1;
       isLoading.value = true;
 
       // Construct URL based on selections
@@ -248,6 +286,7 @@ class TodoController extends GetxController {
   }
   
   void _applyLocalSearch() {
+    currentPage.value = 1;
     final query = searchController.text.toLowerCase();
     if (query.isEmpty) {
       filteredTodos.value = todos;

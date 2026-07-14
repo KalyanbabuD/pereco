@@ -48,10 +48,48 @@ class PaymentsController extends GetxController {
     dateController.dispose();
     noteController.dispose();
     transactionIdController.dispose();
+    scrollController.dispose();
     super.onClose();
   }
 
+  // Pagination
+  final scrollController = ScrollController();
+  final currentPage = 1.obs;
+  final int itemsPerPage = 10;
+
+  int get totalPages => (filteredPayments.length / itemsPerPage).ceil();
+
+  List<Payment> get paginatedPayments {
+    if (filteredPayments.isEmpty) return [];
+    final startIndex = (currentPage.value - 1) * itemsPerPage;
+    if (startIndex >= filteredPayments.length) return [];
+    final endIndex = startIndex + itemsPerPage;
+    return filteredPayments.sublist(
+        startIndex,
+        endIndex > filteredPayments.length ? filteredPayments.length : endIndex);
+  }
+
+  void nextPage() {
+    if (currentPage.value < totalPages) currentPage.value++;
+  }
+
+  void previousPage() {
+    if (currentPage.value > 1) currentPage.value--;
+  }
+
+  void goToPage(int page) {
+    currentPage.value = page;
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void searchPayments(String query) {
+    currentPage.value = 1;
     if (query.isEmpty) {
       filteredPayments.value = payments;
     } else {
@@ -74,6 +112,7 @@ class PaymentsController extends GetxController {
 
   Future<void> fetchPayments() async {
     try {
+      currentPage.value = 1;
       isListLoading.value = true;
       final response = await _apiProvider.get(ApiEndpoints.getPayments);
 

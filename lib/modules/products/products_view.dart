@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../core/app_colors.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
+import '../../core/widgets/pagination_control.dart';
 import 'products_controller.dart';
 
 class ProductsView extends GetView<ProductsController> {
@@ -159,6 +160,7 @@ class ProductsView extends GetView<ProductsController> {
                     return RefreshIndicator(
                       onRefresh: controller.fetchProducts,
                       child: SingleChildScrollView(
+                        controller: controller.scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
                         child: SizedBox(
                           height: MediaQuery.of(context).size.height * 0.4,
@@ -180,6 +182,7 @@ class ProductsView extends GetView<ProductsController> {
                   return RefreshIndicator(
                     onRefresh: controller.fetchProducts,
                     child: SingleChildScrollView(
+                      controller: controller.scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -187,11 +190,13 @@ class ProductsView extends GetView<ProductsController> {
                         if (crossAxisCount < 1) crossAxisCount = 1;
                         double itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 16) / crossAxisCount;
 
-                        return Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          children: List.generate(controller.filteredProducts.length, (index) {
-                            final product = controller.filteredProducts[index];
+                        return Column(
+                          children: [
+                            Wrap(
+                              spacing: 16,
+                              runSpacing: 16,
+                          children: List.generate(controller.paginatedProducts.length, (index) {
+                            final product = controller.paginatedProducts[index];
 
                             return Obx(() {
                               final isExpanded = controller.expandedCards[index] ?? false;
@@ -296,6 +301,13 @@ class ProductsView extends GetView<ProductsController> {
                             );
                             });
                           }),
+                        ),
+                        Obx(() => PaginationControl(
+                              currentPage: controller.currentPage.value,
+                              totalPages: controller.totalPages,
+                              onPageChanged: controller.goToPage,
+                            )),
+                        ],
                         );
                       },
                     ),
