@@ -28,7 +28,10 @@ class CustomersView extends GetView<CustomersController> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       body: RefreshIndicator(
-        onRefresh: controller.fetchCustomers,
+        onRefresh: () async {
+          await controller.fetchCustomers();
+          await controller.fetchCustomersCounts();
+        },
         child: SingleChildScrollView(
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
@@ -201,22 +204,21 @@ class CustomersView extends GetView<CustomersController> {
 
               // Stats Cards
               Obx(() {
-                final total = controller.customers.length;
-                final active = controller.customers
-                    .where((c) => c.active == 1)
-                    .length;
-                final inactive = total - active;
+                final active = controller.activeClients.value;
+                final total = controller.totalClients.value;
+                final reminders = controller.remindersCount.value;
+                final proposals = controller.proposalsCount.value;
 
                 return Row(
                   children: [
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          if (controller.currentFilter.value == 'Active') {
-                            controller.setFilter('');
-                          } else {
-                            controller.setFilter('Active');
-                          }
+                          // if (controller.currentFilter.value == 'Active') {
+                          //   controller.setFilter('');
+                          // } else {
+                          //   controller.setFilter('Active');
+                          // }
                         },
                         child: _buildStatCard(
                           '$active/$total',
@@ -230,38 +232,26 @@ class CustomersView extends GetView<CustomersController> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          if (controller.currentFilter.value == 'Inactive') {
-                            controller.setFilter('');
-                          } else {
-                            controller.setFilter('Inactive');
-                          }
-                        },
+                        onTap: () {},
                         child: _buildStatCard(
-                          '$inactive',
-                          'Inactive',
-                          Icons.person_off,
-                          Colors.red,
-                          controller.currentFilter.value == 'Inactive',
+                          '$reminders',
+                          'Follow-Ups',
+                          Icons.how_to_reg,
+                          Colors.orange,
+                          false,
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          if (controller.currentFilter.value == 'Total') {
-                            controller.setFilter('');
-                          } else {
-                            controller.setFilter('Total');
-                          }
-                        },
+                        onTap: () {},
                         child: _buildStatCard(
-                          '$total',
-                          'Total',
-                          Icons.groups,
+                          '$proposals',
+                          'Proposals',
+                          Icons.edit_document,
                           AppColors.cardDarkBlue,
-                          controller.currentFilter.value == 'Total',
+                          false,
                         ),
                       ),
                     ),

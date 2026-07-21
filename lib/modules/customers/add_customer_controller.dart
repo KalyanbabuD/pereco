@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/network/api_endpoints.dart';
 import '../../core/network/api_provider.dart';
+import 'customers_controller.dart';
 
 class AddCustomerController extends GetxController {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
@@ -63,6 +66,9 @@ class AddCustomerController extends GetxController {
 
     try {
       isLoading.value = true;
+      final prefs = await SharedPreferences.getInstance();
+      final loginStaffId = prefs.getInt('staffid') ?? 1;
+
       final payload = {
         "company": companyController.text,
         "phonenumber": phoneController.text,
@@ -73,7 +79,7 @@ class AddCustomerController extends GetxController {
         "address": addressController.text,
         "website": websiteController.text,
         "leadid": 0,
-        "addedfrom": 49,
+        "addedfrom": loginStaffId,
         "active": 1,
         "billing_street": billingStreetController.text,
         "billing_city": billingCityController.text,
@@ -88,7 +94,57 @@ class AddCustomerController extends GetxController {
       final response = await _apiProvider.post(ApiEndpoints.addCustomer, payload);
 
       if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        int? newUserId;
+        dynamic responseData = response.body;
+
+        if (responseData is String) {
+          try {
+            responseData = jsonDecode(responseData);
+          } catch (e) {
+            newUserId = int.tryParse(responseData.replaceAll(RegExp(r'[^0-9]'), ''));
+          }
+        }
+
+        if (responseData is Map) {
+          if (responseData.containsKey('id')) {
+            newUserId = int.tryParse(responseData['id'].toString());
+          } else if (responseData.containsKey('userid')) {
+            newUserId = int.tryParse(responseData['userid'].toString());
+          } else if (responseData.containsKey('clientId')) {
+            newUserId = int.tryParse(responseData['clientId'].toString());
+          } else if (responseData.containsKey('Status') && responseData['ResultData'] != null) {
+            if (responseData['ResultData'] is Map && responseData['ResultData'].containsKey('id')) {
+              newUserId = int.tryParse(responseData['ResultData']['id'].toString());
+            } else {
+              newUserId = int.tryParse(responseData['ResultData'].toString());
+            }
+          }
+        } else if (responseData is int) {
+          newUserId = responseData;
+        }
+
+        if (newUserId != null) {
+          final contactPayload = {
+            "userid": newUserId,
+            "firstname": firstNameController.text,
+            "lastname": lastNameController.text,
+            "email": emailController.text,
+            "phonenumber": phoneController.text.isNotEmpty ? phoneController.text : contactPhoneController.text,
+            "title": titleController.text,
+            "is_primary": 1,
+            "active": 1
+          };
+          await _apiProvider.post(ApiEndpoints.addContact, contactPayload);
+        }
+
+        if (Get.isRegistered<CustomersController>()) {
+          Get.find<CustomersController>().fetchCustomers();
+          Get.find<CustomersController>().fetchCustomersCounts();
+        }
+
         Get.back(result: true);
+        Get.snackbar('Success', 'Customer added successfully',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
       } else {
         Get.snackbar('Error', 'Failed to add customer',
             snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);

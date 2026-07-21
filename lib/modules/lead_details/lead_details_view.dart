@@ -3,6 +3,12 @@ import 'package:get/get.dart';
 import '../../core/app_colors.dart';
 import 'lead_details_controller.dart';
 import '../dashboard/dashboard_controller.dart';
+import '../customer_details/widgets/add_followup_controller.dart' as add_followup_c;
+import '../customer_details/widgets/add_followup_view.dart' as add_followup_v;
+import '../customer_details/widgets/add_note_controller.dart' as add_note_c;
+import '../customer_details/widgets/add_note_view.dart' as add_note_v;
+import '../../core/utils/pdf_export_helper.dart';
+import '../../core/utils/excel_export_helper.dart';
 import '../../routes/app_routes.dart';
 
 class LeadDetailsView extends GetView<LeadDetailsController> {
@@ -233,11 +239,11 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                         ),
                       ],
                     ),
-                    Icon(
-                      Icons.edit_square,
-                      color: AppColors.textDark.withValues(alpha: 0.7),
-                      size: 20,
-                    ),
+                    // Icon(
+                    //   Icons.edit_square,
+                    //   color: AppColors.textDark.withValues(alpha: 0.7),
+                    //   size: 20,
+                    // ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -569,27 +575,93 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Image.asset(
-                    'assets/images/pdf_icon.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Image.asset(
-                    'assets/images/excel_icon.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.cardDarkBlue,
-                      borderRadius: BorderRadius.circular(6),
+                  GestureDetector(
+                    onTap: () {
+                      if (filteredNotes.isEmpty) {
+                        Get.snackbar(
+                          'Export',
+                          'No notes to export',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        return;
+                      }
+                      PdfExportHelper.openTablePdfPreview(
+                        title: 'Lead Notes',
+                        filename: 'lead_notes.pdf',
+                        headers: ['Description', 'Added By', 'Date Added'],
+                        data: filteredNotes
+                            .map(
+                              (note) => [
+                                note.description,
+                                note.addedByName,
+                                controller.formatDate(note.dateAdded),
+                              ],
+                            )
+                            .toList(),
+                      );
+                    },
+                    child: Image.asset(
+                      'assets/images/pdf_icon.png',
+                      width: 24,
+                      height: 24,
                     ),
-                    child: const Center(
-                      child: Icon(Icons.add, color: Colors.white, size: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      if (filteredNotes.isEmpty) {
+                        Get.snackbar(
+                          'Export',
+                          'No notes to export',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        return;
+                      }
+                      ExcelExportHelper.shareTableExcel(
+                        sheetName: 'Notes',
+                        filename: 'lead_notes.xlsx',
+                        headers: ['Description', 'Added By', 'Date Added'],
+                        data: filteredNotes
+                            .map(
+                              (note) => [
+                                note.description,
+                                note.addedByName,
+                                controller.formatDate(note.dateAdded),
+                              ],
+                            )
+                            .toList(),
+                      );
+                    },
+                    child: Image.asset(
+                      'assets/images/excel_icon.png',
+                      width: 24,
+                      height: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      Get.bottomSheet(
+                        GetBuilder<add_note_c.AddNoteController>(
+                          init: add_note_c.AddNoteController()
+                            ..customerId = controller.leadId
+                            ..relType = 'Lead',
+                          builder: (_) => const add_note_v.AddNoteView(),
+                        ),
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                      );
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDarkBlue,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.add, color: Colors.white, size: 18),
+                      ),
                     ),
                   ),
                 ],
@@ -831,15 +903,20 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                     height: 24,
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.cardDarkBlue,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.add, color: Colors.white, size: 18),
+                  GestureDetector(
+                    onTap: () {
+                      Get.toNamed(Routes.ADD_PROPOSAL);
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDarkBlue,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.add, color: Colors.white, size: 18),
+                      ),
                     ),
                   ),
                 ],
@@ -1132,15 +1209,30 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.cardDarkBlue,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.add, color: Colors.white, size: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Get.bottomSheet(
+                        GetBuilder<add_followup_c.AddFollowupController>(
+                          init: add_followup_c.AddFollowupController()
+                            ..customerId = controller.leadId
+                            ..relType = 'Lead',
+                          builder: (_) =>
+                              const add_followup_v.AddFollowupView(),
+                        ),
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                      );
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDarkBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.add, color: Colors.white, size: 20),
+                      ),
                     ),
                   ),
                 ],

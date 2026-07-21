@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_provider.dart';
 import '../customer_details_controller.dart';
+import '../../lead_details/lead_details_controller.dart';
 
 class AddNoteController extends GetxController {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
@@ -13,6 +14,7 @@ class AddNoteController extends GetxController {
   final isLoading = false.obs;
 
   int customerId = 0;
+  String relType = 'Customer';
 
   Future<void> submitNote() async {
     descriptionError.value = null;
@@ -29,7 +31,7 @@ class AddNoteController extends GetxController {
 
       final payload = {
         "rel_id": customerId,
-        "rel_type": "Customer",
+        "rel_type": relType,
         "description": descriptionController.text,
         "addedfrom": loginStaffId,
       };
@@ -48,6 +50,9 @@ class AddNoteController extends GetxController {
         // Refresh customer details to pull new notes
         if (Get.isRegistered<CustomerDetailsController>()) {
           Get.find<CustomerDetailsController>().fetchCustomerDetails();
+        }
+        if (Get.isRegistered<LeadDetailsController>()) {
+          Get.find<LeadDetailsController>().fetchLeadDetails();
         }
       } else {
         Get.snackbar('Error', 'Failed to save note',

@@ -26,7 +26,10 @@ class LeadsView extends GetView<LeadsController> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       body: RefreshIndicator(
-        onRefresh: controller.fetchLeads,
+        onRefresh: () async {
+          await controller.fetchLeads();
+          await controller.fetchLeadCounts();
+        },
         child: SingleChildScrollView(
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
@@ -98,7 +101,7 @@ class LeadsView extends GetView<LeadsController> {
                           }
 
                           PdfExportHelper.openTablePdfPreview(
-                            title: 'Individual Leads Data',
+                            title: 'Lead Data',
                             headers: [
                               'S.No',
                               'Name',
@@ -197,18 +200,17 @@ class LeadsView extends GetView<LeadsController> {
 
               // Stats Cards
               Obx(() {
-                final total = controller.leads.length;
-                final started = controller.leads
-                    .where((l) => l.statusName?.toLowerCase() == 'started')
-                    .length;
-                final other = total - started;
+                final active = controller.activeLeads.value;
+                final total = controller.totalLeads.value;
+                final reminders = controller.remindersCount.value;
+                final proposals = controller.proposalsCount.value;
 
                 return Row(
                   children: [
                     Expanded(
                       child: _buildStatCard(
-                        '$started/$total',
-                        'Started',
+                        '$active/$total',
+                        'Active',
                         Icons.people,
                         Colors.green,
                       ),
@@ -216,8 +218,8 @@ class LeadsView extends GetView<LeadsController> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
-                        '$other',
-                        'Other',
+                        '$reminders',
+                        'Reminders',
                         Icons.forum,
                         Colors.orange,
                       ),
@@ -225,9 +227,9 @@ class LeadsView extends GetView<LeadsController> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
-                        '$total',
-                        'Total',
-                        Icons.assignment_turned_in,
+                        '$proposals',
+                        'Proposals',
+                        Icons.edit_document,
                         AppColors.cardDarkBlue,
                       ),
                     ),

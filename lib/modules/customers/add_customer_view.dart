@@ -173,6 +173,25 @@ class AddCustomerView extends GetView<AddCustomerController> {
                           _buildTextField(label: 'Title', textController: controller.titleController, prefixIcon: Icons.badge_outlined),
                           _buildTextField(label: 'Email', textController: controller.emailController, prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
                         ]),
+                        const SizedBox(height: 24),
+                        Builder(
+                          builder: (context) {
+                            return Align(
+                              alignment: Alignment.centerRight,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  DefaultTabController.of(context).animateTo(1);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.cardDarkBlue,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text('Next', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            );
+                          }
+                        ),
                       ],
                     ),
                   ),
@@ -246,66 +265,33 @@ class AddCustomerView extends GetView<AddCustomerController> {
                             ),
                           ),
                         )),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Get.back(),
+                              child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                            ),
+                            const SizedBox(width: 16),
+                            Obx(() => ElevatedButton(
+                              onPressed: controller.isLoading.value ? null : controller.submitCustomer,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.cardDarkBlue,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: controller.isLoading.value
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : const Text('Save', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            )),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ),
-            
-            // Footer Buttons
-            Builder(
-              builder: (BuildContext context) {
-                final TabController tabController = DefaultTabController.of(context);
-                return AnimatedBuilder(
-                  animation: tabController,
-                  builder: (context, _) {
-                    bool isInfoTab = tabController.index == 0;
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(top: BorderSide(color: Colors.grey.shade200)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: isInfoTab 
-                          ? [
-                              ElevatedButton(
-                                onPressed: () {
-                                  tabController.animateTo(1);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.cardDarkBlue,
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                                child: const Text('Next', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                              ),
-                            ]
-                          : [
-                              TextButton(
-                                onPressed: () => Get.back(),
-                                child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                              ),
-                              const SizedBox(width: 16),
-                              Obx(() => ElevatedButton(
-                                onPressed: controller.isLoading.value ? null : controller.submitCustomer,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.cardDarkBlue,
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                                child: controller.isLoading.value
-                                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                    : const Text('Save', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                              )),
-                            ],
-                      ),
-                    );
-                  },
-                );
-              },
             ),
           ],
         ),

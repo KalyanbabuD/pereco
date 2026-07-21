@@ -49,13 +49,13 @@ class AddContactController extends GetxController {
       final isUpdate = existingContact != null;
       final payload = {
         if (isUpdate) "id": existingContact!.id,
-        "userid": customerId,
+        if (!isUpdate) "userid": customerId,
         "firstname": firstNameController.text,
         "lastname": lastNameController.text,
         "email": emailController.text,
         "phonenumber": phoneController.text,
         "title": titleController.text,
-        "is_primary": existingContact?.isPrimary ?? 0,
+        "is_primary": existingContact?.isPrimary ?? 1,
         "active": existingContact?.active ?? 1,
       };
 

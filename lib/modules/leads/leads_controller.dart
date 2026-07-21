@@ -14,6 +14,12 @@ class LeadsController extends GetxController {
   final isLoading = true.obs;
   final TextEditingController searchController = TextEditingController();
 
+  // KPIs
+  final activeLeads = 0.obs;
+  final totalLeads = 0.obs;
+  final remindersCount = 0.obs;
+  final proposalsCount = 0.obs;
+
   // Pagination
   final scrollController = ScrollController();
   final currentPage = 1.obs;
@@ -61,6 +67,7 @@ class LeadsController extends GetxController {
   void onInit() {
     super.onInit();
     fetchLeads();
+    fetchLeadCounts();
   }
 
   void searchLeads(String query) {
@@ -114,6 +121,33 @@ class LeadsController extends GetxController {
       print('Error fetching leads: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchLeadCounts() async {
+    try {
+      final response = await _apiProvider.get(ApiEndpoints.getLeadCounts);
+      if (response.statusCode == 200 && response.body != null) {
+        Map<String, dynamic> jsonResponse;
+        if (response.body is Map<String, dynamic>) {
+          jsonResponse = response.body;
+        } else {
+          jsonResponse = jsonDecode(response.bodyString!);
+        }
+
+        if (jsonResponse['Status'] == true && jsonResponse['ResultData'] != null) {
+          final resultData = jsonResponse['ResultData'] as List;
+          if (resultData.isNotEmpty) {
+            final data = resultData[0];
+            activeLeads.value = data['ActiveLeads'] ?? 0;
+            totalLeads.value = data['TotalLeads'] ?? 0;
+            remindersCount.value = data['Reminders'] ?? 0;
+            proposalsCount.value = data['Proposals'] ?? 0;
+          }
+        }
+      }
+    } catch (e) {
+      print('Error fetching lead counts: $e');
     }
   }
 }

@@ -55,8 +55,8 @@ class LeadDetailsController extends GetxController with GetSingleTickerProviderS
       }
 
       // Fetch Proposals
-      print('Fetching Proposals from: ${ApiEndpoints.baseUrl}${ApiEndpoints.getProposals}');
-      final proposalsRes = await _dio.get('${ApiEndpoints.baseUrl}${ApiEndpoints.getProposals}');
+      print('Fetching Proposals from: ${ApiEndpoints.baseUrl}${ApiEndpoints.getProposalsByRelId}?RelId=$leadId');
+      final proposalsRes = await _dio.get('${ApiEndpoints.baseUrl}${ApiEndpoints.getProposalsByRelId}?RelId=$leadId');
       print('Proposals response: ${proposalsRes.data}');
       if (proposalsRes.data['Status'] == true && proposalsRes.data['ResultData'] != null) {
         final list = proposalsRes.data['ResultData'] as List;

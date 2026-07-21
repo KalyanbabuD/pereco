@@ -7,6 +7,7 @@ import '../../../core/network/api_provider.dart';
 import '../../../data/models/lead_details_models.dart';
 import '../../../data/models/staff_model.dart';
 import '../customer_details_controller.dart';
+import '../../lead_details/lead_details_controller.dart';
 
 class AddFollowupController extends GetxController {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
@@ -26,6 +27,7 @@ class AddFollowupController extends GetxController {
   final isLoading = false.obs;
 
   int customerId = 0;
+  String relType = 'Customer';
   FollowUp? existingFollowup;
   final selectedDateTimeRx = Rxn<DateTime>();
 
@@ -112,7 +114,7 @@ class AddFollowupController extends GetxController {
         "date": formattedDate,
         "staff": selectedStaffId.value,
         if (!isUpdate) "rel_id": customerId,
-        if (!isUpdate) "rel_type": "Customer",
+        if (!isUpdate) "rel_type": relType,
         if (!isUpdate) "creator": loginStaffId,
       };
 
@@ -128,9 +130,12 @@ class AddFollowupController extends GetxController {
           backgroundColor: Colors.green, 
           colorText: Colors.white
         );
-        // Refresh customer details
+        // Refresh details
         if (Get.isRegistered<CustomerDetailsController>()) {
           Get.find<CustomerDetailsController>().fetchCustomerDetails();
+        }
+        if (Get.isRegistered<LeadDetailsController>()) {
+          Get.find<LeadDetailsController>().fetchLeadDetails();
         }
       } else {
         Get.snackbar('Error', 'Failed to save follow-up',

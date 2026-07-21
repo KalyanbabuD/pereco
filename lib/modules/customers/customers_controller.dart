@@ -14,6 +14,12 @@ class CustomersController extends GetxController {
   final TextEditingController searchController = TextEditingController();
   final currentFilter = ''.obs;
 
+  // KPIs
+  final activeClients = 0.obs;
+  final totalClients = 0.obs;
+  final remindersCount = 0.obs;
+  final proposalsCount = 0.obs;
+
   // Pagination
   final scrollController = ScrollController();
   final currentPage = 1.obs;
@@ -61,6 +67,7 @@ class CustomersController extends GetxController {
   void onInit() {
     super.onInit();
     fetchCustomers();
+    fetchCustomersCounts();
   }
 
   void setFilter(String filter) {
@@ -129,6 +136,33 @@ class CustomersController extends GetxController {
       print('Error fetching customers: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchCustomersCounts() async {
+    try {
+      final response = await _apiProvider.get(ApiEndpoints.getCustomersCounts);
+      if (response.statusCode == 200 && response.body != null) {
+        Map<String, dynamic> jsonResponse;
+        if (response.body is Map<String, dynamic>) {
+          jsonResponse = response.body;
+        } else {
+          jsonResponse = jsonDecode(response.bodyString!);
+        }
+
+        if (jsonResponse['Status'] == true && jsonResponse['ResultData'] != null) {
+          final resultData = jsonResponse['ResultData'] as List;
+          if (resultData.isNotEmpty) {
+            final data = resultData[0];
+            activeClients.value = data['ActiveClients'] ?? 0;
+            totalClients.value = data['TotalClients'] ?? 0;
+            remindersCount.value = data['Reminders'] ?? 0;
+            proposalsCount.value = data['Proposals'] ?? 0;
+          }
+        }
+      }
+    } catch (e) {
+      print('Error fetching customer counts: $e');
     }
   }
 }

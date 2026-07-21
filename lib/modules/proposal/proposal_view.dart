@@ -434,20 +434,6 @@ class ProposalView extends GetView<ProposalController> {
                             ],
                           ),
                         ),
-                        const PopupMenuItem<String>(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.edit_outlined,
-                                size: 16,
-                                color: Colors.teal,
-                              ),
-                              SizedBox(width: 8),
-                              Text('Edit', style: TextStyle(fontSize: 14)),
-                            ],
-                          ),
-                        ),
                       ],
                 ),
               ],

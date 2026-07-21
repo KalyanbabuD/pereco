@@ -138,55 +138,55 @@ class LoginView extends GetView<LoginController> {
                 ),
                 const SizedBox(height: 16),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Obx(
-                          () => SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: Checkbox(
-                              value: controller.rememberMe.value,
-                              onChanged: controller.toggleRememberMe,
-                              activeColor: AppColors.primaryRed,
-                              side: const BorderSide(color: Color(0xFF8A94A6)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Remember me',
-                          style: TextStyle(
-                            color: Color(0xFF556080),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(
-                          color: AppColors.primaryRed,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     Row(
+                //       children: [
+                //         Obx(
+                //           () => SizedBox(
+                //             height: 24,
+                //             width: 24,
+                //             child: Checkbox(
+                //               value: controller.rememberMe.value,
+                //               onChanged: controller.toggleRememberMe,
+                //               activeColor: AppColors.primaryRed,
+                //               side: const BorderSide(color: Color(0xFF8A94A6)),
+                //               shape: RoundedRectangleBorder(
+                //                 borderRadius: BorderRadius.circular(4),
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //         const SizedBox(width: 8),
+                //         const Text(
+                //           'Remember me',
+                //           style: TextStyle(
+                //             color: Color(0xFF556080),
+                //             fontSize: 13,
+                //             fontWeight: FontWeight.w500,
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //     TextButton(
+                //       onPressed: () {},
+                //       style: TextButton.styleFrom(
+                //         padding: EdgeInsets.zero,
+                //         minimumSize: const Size(0, 0),
+                //         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                //       ),
+                //       child: const Text(
+                //         'Forgot Password?',
+                //         style: TextStyle(
+                //           color: AppColors.primaryRed,
+                //           fontWeight: FontWeight.bold,
+                //           fontSize: 13,
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
                 const SizedBox(height: 32),
 
                 SizedBox(

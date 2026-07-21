@@ -16,6 +16,7 @@ import '../products/products_view.dart';
 import '../expenses/expenses_view.dart';
 import '../reports/lead_reports_view.dart';
 import '../reports/customer_reports_view.dart';
+import '../reports/customer_conversion_view.dart';
 import '../reports/followup_reports_view.dart';
 import '../settings/settings_view.dart';
 import '../collections/collections_view.dart';
@@ -158,6 +159,9 @@ class DashboardView extends GetView<DashboardController> {
             break;
           case 13:
             content = const CollectionsView();
+            break;
+          case 14:
+            content = const CustomerConversionView();
             break;
           default:
             content = _buildHomeContent();
@@ -403,17 +407,17 @@ class DashboardView extends GetView<DashboardController> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildActionIcon('Customers', Icons.people, onTap: () {}),
-                  _buildActionIcon('Leads', Icons.phone_in_talk, onTap: () {}),
+                  _buildActionIcon('Customers', Icons.people, onTap: () => controller.changeTabIndex(10)),
+                  _buildActionIcon('Leads', Icons.phone_in_talk, onTap: () => controller.changeTabIndex(9)),
                   _buildActionIcon(
                     'Customer Conversion',
                     Icons.how_to_reg,
-                    onTap: () {},
+                    onTap: () => controller.changeTabIndex(14),
                   ),
                   _buildActionIcon(
                     'Follow-ups',
                     Icons.event_available,
-                    onTap: () {},
+                    onTap: () => controller.changeTabIndex(11),
                   ),
                 ],
               ),
