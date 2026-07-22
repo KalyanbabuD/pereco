@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import 'widgets/report_date_picker.dart';
 
 class FollowupReportsView extends StatelessWidget {
   const FollowupReportsView({super.key});
@@ -63,20 +64,6 @@ class FollowupReportsView extends StatelessWidget {
                       constraints: const BoxConstraints(),
                       onPressed: () {},
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.grey, size: 24),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () {},
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_up, color: Colors.grey, size: 24),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () {},
-                    ),
                   ],
                 ),
               ],
@@ -87,9 +74,9 @@ class FollowupReportsView extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Expanded(child: _buildDatePicker('From Date')),
+                    const Expanded(child: ReportDatePicker(label: 'From Date')),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildDatePicker('To Date')),
+                    const Expanded(child: ReportDatePicker(label: 'To Date')),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -177,32 +164,6 @@ class FollowupReportsView extends StatelessWidget {
             ),
           ],
         ),
-    );
-  }
-
-  Widget _buildDatePicker(String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: TextStyle(color: Colors.grey.shade700, fontSize: 13, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('dd-mm-yyyy', style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
-              Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade700),
-            ],
-          ),
-        ),
-      ],
     );
   }
 

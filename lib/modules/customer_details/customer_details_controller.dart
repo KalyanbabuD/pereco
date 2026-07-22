@@ -49,6 +49,20 @@ class CustomerDetailsController extends GetxController
     fetchCustomerDetails();
   }
 
+  Future<void> deleteNote(int noteId) async {
+    try {
+      final response = await _apiProvider.post(ApiEndpoints.deleteNote, {'id': noteId});
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        notes.removeWhere((note) => note.id == noteId);
+        Get.snackbar('Success', 'Note deleted successfully', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+      } else {
+        Get.snackbar('Error', 'Failed to delete note', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete note', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
   @override
   void onClose() {
     tabController.dispose();

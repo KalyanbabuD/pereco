@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import 'widgets/report_date_picker.dart';
 
 class LeadReportsView extends StatelessWidget {
   const LeadReportsView({super.key});
@@ -73,9 +74,9 @@ class LeadReportsView extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Expanded(child: _buildDatePicker('From Date')),
+                    const Expanded(child: ReportDatePicker(label: 'From Date')),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildDatePicker('To Date')),
+                    const Expanded(child: ReportDatePicker(label: 'To Date')),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -166,32 +167,6 @@ class LeadReportsView extends StatelessWidget {
             ),
           ],
         ),
-    );
-  }
-
-  Widget _buildDatePicker(String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: TextStyle(color: Colors.grey.shade700, fontSize: 13, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('dd-mm-yyyy', style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
-              Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade700),
-            ],
-          ),
-        ),
-      ],
     );
   }
 

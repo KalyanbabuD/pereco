@@ -12,15 +12,15 @@ import '../todo/todo_controller.dart';
 class DashboardBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<DashboardController>(() => DashboardController());
-    Get.lazyPut<LeadsController>(() => LeadsController());
-    Get.lazyPut<CustomersController>(() => CustomersController());
-    Get.lazyPut<ProposalController>(() => ProposalController());
-    Get.lazyPut<FollowupsController>(() => FollowupsController());
-    Get.lazyPut<PaymentsController>(() => PaymentsController());
-    Get.lazyPut<ProductsController>(() => ProductsController());
-    Get.lazyPut<ExpensesController>(() => ExpensesController());
-    Get.lazyPut<TodoController>(() => TodoController());
+    Get.lazyPut<DashboardController>(() => DashboardController(), fenix: true);
+    Get.lazyPut<LeadsController>(() => LeadsController(), fenix: true);
+    Get.lazyPut<CustomersController>(() => CustomersController(), fenix: true);
+    Get.lazyPut<ProposalController>(() => ProposalController(), fenix: true);
+    Get.lazyPut<FollowupsController>(() => FollowupsController(), fenix: true);
+    Get.lazyPut<PaymentsController>(() => PaymentsController(), fenix: true);
+    Get.lazyPut<ProductsController>(() => ProductsController(), fenix: true);
+    Get.lazyPut<ExpensesController>(() => ExpensesController(), fenix: true);
+    Get.lazyPut<TodoController>(() => TodoController(), fenix: true);
   }
 }
 

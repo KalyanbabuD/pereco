@@ -3,13 +3,17 @@ import 'package:get/get.dart';
 import '../../core/app_colors.dart';
 import 'lead_details_controller.dart';
 import '../dashboard/dashboard_controller.dart';
-import '../customer_details/widgets/add_followup_controller.dart' as add_followup_c;
+import '../customer_details/widgets/add_followup_controller.dart'
+    as add_followup_c;
 import '../customer_details/widgets/add_followup_view.dart' as add_followup_v;
 import '../customer_details/widgets/add_note_controller.dart' as add_note_c;
 import '../customer_details/widgets/add_note_view.dart' as add_note_v;
+import '../customers/add_customer_view.dart';
+import '../customers/add_customer_controller.dart';
 import '../../core/utils/pdf_export_helper.dart';
 import '../../core/utils/excel_export_helper.dart';
 import '../../routes/app_routes.dart';
+import '../../data/models/lead_details_models.dart';
 
 class LeadDetailsView extends GetView<LeadDetailsController> {
   const LeadDetailsView({super.key});
@@ -40,6 +44,42 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
             fontSize: 18,
           ),
         ),
+        actions: [
+          GestureDetector(
+            onTap: () {
+              if (controller.profile.value != null) {
+                Get.bottomSheet(
+                  GetBuilder<AddCustomerController>(
+                    init: AddCustomerController(),
+                    builder: (_) => const AddCustomerView(),
+                  ),
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  settings: RouteSettings(arguments: controller.profile.value),
+                );
+              }
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(
+                  0xFF5CB85C,
+                ), // matches the nice green in your screenshot
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Image.asset(
+                'assets/images/person2.png',
+                width:
+                    35, // You can change this height/width to whatever feels right!
+                height: 35,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Container(
@@ -702,13 +742,7 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                             spacing: 16,
                             runSpacing: 16,
                             children: filteredNotes
-                                .map(
-                                  (note) => _buildNoteCard(
-                                    note.addedByName,
-                                    controller.formatDate(note.dateAdded),
-                                    note.description,
-                                  ),
-                                )
+                                .map((note) => _buildNoteCard(note))
                                 .toList(),
                           ),
                         ],
@@ -721,7 +755,7 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
     });
   }
 
-  Widget _buildNoteCard(String name, String date, String noteText) {
+  Widget _buildNoteCard(Note note) {
     return Container(
       width: Get.width > 700 ? 320 : Get.width - 32,
       padding: const EdgeInsets.all(12),
@@ -738,76 +772,119 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.person,
-                    size: 16,
-                    color: AppColors.cardDarkBlue,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: AppColors.cardDarkBlue,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.person,
+                          size: 16,
+                          color: AppColors.cardDarkBlue,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          note.addedByName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: AppColors.cardDarkBlue,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.calendar_today,
-                    size: 14,
-                    color: AppColors.cardDarkBlue,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    date,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppColors.cardDarkBlue,
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 14,
+                          color: AppColors.cardDarkBlue,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          controller.formatDate(note.dateAdded),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: AppColors.cardDarkBlue,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(
-                    Icons.edit_square,
-                    size: 16,
-                    color: AppColors.cardDarkBlue,
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.delete, size: 16, color: Colors.red),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.description,
-                size: 16,
-                color: AppColors.greyText,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  noteText,
-                  style: const TextStyle(
-                    color: AppColors.greyText,
-                    fontSize: 14,
-                  ),
+                  ],
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.description,
+                      size: 16,
+                      color: AppColors.greyText,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        note.description,
+                        style: const TextStyle(
+                          color: AppColors.greyText,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Get.bottomSheet(
+                    GetBuilder<add_note_c.AddNoteController>(
+                      init: add_note_c.AddNoteController()
+                        ..customerId = controller.leadId
+                        ..relType = 'Lead'
+                        ..existingNote = note,
+                      builder: (_) => const add_note_v.AddNoteView(),
+                    ),
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                  );
+                },
+                child: const Icon(
+                  Icons.edit_square,
+                  size: 16,
+                  color: AppColors.cardDarkBlue,
+                ),
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () {
+                  Get.defaultDialog(
+                    title: 'Delete Note',
+                    middleText: 'Are you sure you want to delete this note?',
+                    textConfirm: 'Delete',
+                    textCancel: 'Cancel',
+                    confirmTextColor: Colors.white,
+                    buttonColor: Colors.red,
+                    onConfirm: () {
+                      Get.back();
+                      controller.deleteNote(note.id);
+                    },
+                  );
+                },
+                child: const Icon(Icons.delete, size: 18, color: Colors.red),
               ),
             ],
           ),
@@ -1254,13 +1331,7 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                             spacing: 16,
                             runSpacing: 16,
                             children: filteredFollowUps
-                                .map(
-                                  (follow) => _buildFollowUpCard(
-                                    follow.description,
-                                    '${follow.firstName} ${follow.lastName}',
-                                    controller.formatDate(follow.date),
-                                  ),
-                                )
+                                .map((follow) => _buildFollowUpCard(follow))
                                 .toList(),
                           ),
                         ],
@@ -1273,7 +1344,7 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
     });
   }
 
-  Widget _buildFollowUpCard(String title, String user, String date) {
+  Widget _buildFollowUpCard(FollowUp followUp) {
     return Container(
       width: Get.width > 700 ? 300 : Get.width - 32,
       padding: const EdgeInsets.all(12),
@@ -1309,7 +1380,7 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        title,
+                        followUp.description,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -1319,10 +1390,25 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.edit_square,
-                size: 18,
-                color: AppColors.textDark,
+              GestureDetector(
+                onTap: () {
+                  Get.bottomSheet(
+                    GetBuilder<add_followup_c.AddFollowupController>(
+                      init: add_followup_c.AddFollowupController()
+                        ..customerId = controller.leadId
+                        ..relType = 'Lead'
+                        ..existingFollowup = followUp,
+                      builder: (_) => const add_followup_v.AddFollowupView(),
+                    ),
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                  );
+                },
+                child: const Icon(
+                  Icons.edit_square,
+                  size: 18,
+                  color: AppColors.textDark,
+                ),
               ),
             ],
           ),
@@ -1332,7 +1418,7 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
               const Icon(Icons.person, size: 16, color: AppColors.greyText),
               const SizedBox(width: 4),
               Text(
-                user,
+                '${followUp.firstName} ${followUp.lastName}',
                 style: const TextStyle(fontSize: 12, color: AppColors.greyText),
               ),
               const SizedBox(width: 16),
@@ -1343,7 +1429,7 @@ class LeadDetailsView extends GetView<LeadDetailsController> {
               ),
               const SizedBox(width: 4),
               Text(
-                date,
+                controller.formatDate(followUp.date),
                 style: const TextStyle(fontSize: 12, color: AppColors.greyText),
               ),
             ],

@@ -6,6 +6,8 @@ import 'add_lead_controller.dart';
 import '../../../../data/models/lead_source_model.dart';
 import '../../../../data/models/staff_model.dart';
 
+import '../../../../data/models/lead_status_model.dart';
+
 class AddLeadView extends StatelessWidget {
   const AddLeadView({super.key});
 
@@ -27,12 +29,21 @@ class AddLeadView extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                controller.existingLead != null ? 'Edit Lead' : 'Add Lead',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.cardDarkBlue),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    controller.existingLead != null ? 'Edit Lead' : 'Add Lead',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.cardDarkBlue),
+                  ),
+                  const Text(
+                    'Fill out the form to add a new lead',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
               ),
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: const Icon(Icons.close, color: AppColors.cardDarkBlue),
                 onPressed: () => Get.back(),
               )
             ],
@@ -53,10 +64,12 @@ class AddLeadView extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildTextField('Enter Email', controller.emailController, Icons.email),
                     const SizedBox(height: 12),
-                    _buildTextField('Enter Company', controller.companyController, Icons.business),
-                    const SizedBox(height: 12),
                     Row(
                       children: [
+                        Expanded(
+                          child: _buildTextField('Enter Company', controller.companyController, Icons.business),
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: DropdownButtonFormField2<int>(
                             isExpanded: true,
@@ -73,42 +86,30 @@ class AddLeadView extends StatelessWidget {
                             onChanged: (val) => controller.selectedSourceId.value = val,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
                         Expanded(
                           child: DropdownButtonFormField2<int>(
                             isExpanded: true,
                             dropdownStyleData: const DropdownStyleData(maxHeight: 250, decoration: BoxDecoration(color: Colors.white)),
                             decoration: _dropdownDecoration(),
-                            hint: const Text('Select Assigned To *', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                            value: controller.selectedStaffId.value,
-                            items: controller.staffList.map((Staff s) {
+                            hint: const Text('Select Status *', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                            value: controller.selectedStatusId.value,
+                            items: controller.statuses.map((LeadStatus s) {
                               return DropdownMenuItem<int>(
-                                value: s.staffid,
-                                child: Text(s.fullName, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
+                                value: s.id,
+                                child: Text(s.name ?? 'Unknown', style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
                               );
                             }).toList(),
-                            onChanged: (val) => controller.selectedStaffId.value = val,
-                            dropdownSearchData: DropdownSearchData(
-                              searchController: TextEditingController(),
-                              searchInnerWidgetHeight: 50,
-                              searchInnerWidget: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: TextFormField(
-                                  decoration: const InputDecoration(
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    hintText: 'Search staff...',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
-                              searchMatchFn: (item, searchValue) {
-                                final s = controller.staffList.firstWhere((s) => s.staffid == item.value);
-                                final name = s.fullName.toLowerCase();
-                                return name.contains(searchValue.toLowerCase());
-                              },
-                            ),
+                            onChanged: (val) => controller.selectedStatusId.value = val,
                           ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildTextField('City', controller.cityController, Icons.location_city),
                         ),
                       ],
                     ),
@@ -117,18 +118,28 @@ class AddLeadView extends StatelessWidget {
                     const SizedBox(height: 12),
                     _buildTextField('Enter Description', controller.descriptionController, null, maxLines: 4),
                     const SizedBox(height: 24),
-                    SizedBox(
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: controller.isLoading.value ? null : controller.submitLead,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.cardDarkBlue,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Get.back(),
+                          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
                         ),
-                        child: controller.isLoading.value 
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Save', style: TextStyle(color: Colors.white, fontSize: 16)),
-                      ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed: controller.isLoading.value ? null : controller.submitLead,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.cardDarkBlue,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: controller.isLoading.value 
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Text('Save', style: TextStyle(color: Colors.white, fontSize: 14)),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
                   ],

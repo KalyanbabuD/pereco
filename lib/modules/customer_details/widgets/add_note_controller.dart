@@ -5,6 +5,7 @@ import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_provider.dart';
 import '../customer_details_controller.dart';
 import '../../lead_details/lead_details_controller.dart';
+import '../../../data/models/lead_details_models.dart';
 
 class AddNoteController extends GetxController {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
@@ -15,6 +16,15 @@ class AddNoteController extends GetxController {
 
   int customerId = 0;
   String relType = 'Customer';
+  Note? existingNote;
+
+  @override
+  void onReady() {
+    super.onReady();
+    if (existingNote != null) {
+      descriptionController.text = existingNote!.description;
+    }
+  }
 
   Future<void> submitNote() async {
     descriptionError.value = null;
@@ -29,14 +39,18 @@ class AddNoteController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       final loginStaffId = prefs.getInt('staffid') ?? 0;
 
+      final isUpdate = existingNote != null;
+
       final payload = {
-        "rel_id": customerId,
-        "rel_type": relType,
+        if (isUpdate) "id": existingNote!.id,
         "description": descriptionController.text,
-        "addedfrom": loginStaffId,
+        if (!isUpdate) "rel_id": customerId,
+        if (!isUpdate) "rel_type": relType,
+        if (!isUpdate) "addedfrom": loginStaffId,
       };
 
-      final response = await _apiProvider.post(ApiEndpoints.addNote, payload);
+      final endpoint = isUpdate ? ApiEndpoints.updateNote : ApiEndpoints.addNote;
+      final response = await _apiProvider.post(endpoint, payload);
 
       if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
         Get.back(result: true);

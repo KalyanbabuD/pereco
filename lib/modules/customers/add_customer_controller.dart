@@ -6,6 +6,8 @@ import '../../core/network/api_endpoints.dart';
 import '../../core/network/api_provider.dart';
 import 'customers_controller.dart';
 
+import '../../data/models/lead_details_models.dart';
+
 class AddCustomerController extends GetxController {
   final ApiProvider _apiProvider = Get.find<ApiProvider>();
 
@@ -45,6 +47,26 @@ class AddCustomerController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Pre-fill from Lead if passed
+    if (Get.arguments != null && Get.arguments is LeadProfile) {
+      final lead = Get.arguments as LeadProfile;
+      companyController.text = lead.company;
+      websiteController.text = lead.website;
+      phoneController.text = lead.phonenumber;
+      cityController.text = lead.city;
+      stateController.text = lead.state;
+      zipController.text = lead.zip;
+      addressController.text = lead.address;
+      emailController.text = lead.email;
+      contactPhoneController.text = lead.phonenumber;
+
+      final nameParts = lead.name.split(' ');
+      firstNameController.text = nameParts.isNotEmpty ? nameParts.first : '';
+      if (nameParts.length > 1) {
+        lastNameController.text = nameParts.sublist(1).join(' ');
+      }
+    }
+
     // Listen to changes to copy billing to shipping
     sameAsBilling.listen((isSame) {
       if (isSame) {

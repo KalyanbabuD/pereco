@@ -6,6 +6,7 @@ import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_provider.dart';
 import '../../../data/models/lead_model.dart';
 import '../../../data/models/lead_source_model.dart';
+import '../../../data/models/lead_status_model.dart';
 import '../../../data/models/staff_model.dart';
 import '../leads_controller.dart';
 
@@ -20,6 +21,7 @@ class AddLeadController extends GetxController {
   // Dropdown lists
   final sources = <LeadSource>[].obs;
   final staffList = <Staff>[].obs;
+  final statuses = <LeadStatus>[].obs;
 
   // Form Fields
   final nameController = TextEditingController();
@@ -28,10 +30,12 @@ class AddLeadController extends GetxController {
   final companyController = TextEditingController();
   final addressController = TextEditingController();
   final descriptionController = TextEditingController();
+  final cityController = TextEditingController();
 
   // Selected values
   final selectedSourceId = Rxn<int>();
   final selectedStaffId = Rxn<int>();
+  final selectedStatusId = Rxn<int>();
 
   @override
   void onInit() {
@@ -51,9 +55,11 @@ class AddLeadController extends GetxController {
       emailController.text = existingLead!.email ?? '';
       companyController.text = existingLead!.company ?? '';
       addressController.text = existingLead!.address ?? '';
+      cityController.text = existingLead!.city ?? '';
       // Description is not part of the standard list model, might be empty here.
 
       selectedSourceId.value = existingLead!.sourceId;
+      selectedStatusId.value = existingLead!.statusId;
       // Note: AssignedTo in Lead model is string in list, we might not have the ID directly unless we parse it.
       // If we don't have it, we leave it null.
     }
@@ -61,7 +67,7 @@ class AddLeadController extends GetxController {
 
   Future<void> fetchInitialData() async {
     isLoading.value = true;
-    await Future.wait([fetchSources(), fetchStaff()]);
+    await Future.wait([fetchSources(), fetchStaff(), fetchStatuses()]);
     isLoading.value = false;
   }
 
@@ -79,6 +85,23 @@ class AddLeadController extends GetxController {
       }
     } catch (e) {
       print('Error fetching lead sources: $e');
+    }
+  }
+
+  Future<void> fetchStatuses() async {
+    try {
+      final res = await _apiProvider.get(ApiEndpoints.getLeadStatus);
+      if (res.statusCode == 200 && res.body != null) {
+        final data = res.body is String
+            ? jsonDecode(res.bodyString!)
+            : res.body;
+        final model = LeadStatusResponse.fromJson(data);
+        if (model.status == true && model.resultData != null) {
+          statuses.value = model.resultData!;
+        }
+      }
+    } catch (e) {
+      print('Error fetching lead statuses: $e');
     }
   }
 
@@ -134,10 +157,10 @@ class AddLeadController extends GetxController {
       );
       return;
     }
-    if (selectedStaffId.value == null) {
+    if (selectedStatusId.value == null) {
       Get.snackbar(
         'Error',
-        'Assigned staff is required',
+        'Status is required',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -161,17 +184,17 @@ class AddLeadController extends GetxController {
         "company": companyController.text.trim(),
         "description": descriptionController.text.trim(),
         "country": 1,
-        "zip": "null",
-        "city": "null",
-        "state": "null",
+        "zip": "",
+        "city": cityController.text.trim(),
+        "state": "",
         "address": addressController.text.trim(),
-        "assigned": selectedStaffId.value,
-        "status": isEdit ? existingLead!.statusId ?? 1 : 1,
+        "assigned": selectedStaffId.value ?? loginStaffId,
+        "status": selectedStatusId.value,
         "source": selectedSourceId.value,
         "lastcontact": "$dateStr $timeStr",
         "dateassigned": dateStr,
         "email": emailController.text.trim(),
-        "website": "null",
+        "website": "",
         "phonenumber": mobileController.text.trim(),
         "addedfrom": loginStaffId,
       };
